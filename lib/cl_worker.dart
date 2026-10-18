@@ -4,9 +4,15 @@ class Worker{
   final DateTime birthday;
   final String shop;
   final String position;
-  final String phone;
   final int brigade;
   final bool working;
+  final String phoneMobileWork;
+  final String phoneMobilePersonal1;
+  final String phoneMobilePersonal2;
+  final String phoneWork1;
+  final String phoneWork2;
+  final String phoneWork3;
+  final String phoneShop;
 
   const Worker({
     required this.id,
@@ -14,9 +20,15 @@ class Worker{
     required this.birthday,
     required this.shop,
     required this.position,
-    required this.phone,
     required this.brigade,
     required this.working,
+    required this.phoneMobileWork,
+    required this.phoneMobilePersonal1,
+    required this.phoneMobilePersonal2,
+    required this.phoneWork1,
+    required this.phoneWork2,
+    required this.phoneWork3,
+    required this.phoneShop,
   });
 
   //fromJson() — создаёт работника из записи JSON.
@@ -27,9 +39,15 @@ class Worker{
       birthday: DateTime.parse(json['birthday'] as String), 
       shop: json['shop'] as String, 
       position: json['position'] as String, 
-      phone: json['phone'] as String, 
       brigade: json['brigade'] as int, 
       working: json['working'] as bool,
+      phoneMobileWork:json['phoneMobileWork'] as String,
+      phoneMobilePersonal1:json['phoneMobilePersonal1'] as String,
+      phoneMobilePersonal2:json['phoneMobilePersonal2'] as String,
+      phoneWork1:json['phoneWork1'] as String,
+      phoneWork2:json['phoneWork2'] as String,
+      phoneWork3:json['phoneWork3'] as String,
+      phoneShop:json['phoneShop'] as String,
       );
   }
 
@@ -46,9 +64,15 @@ class Worker{
       'birthday': birthdayText, 
       'shop': shop, 
       'position': position, 
-      'phone': phone, 
       'brigade': brigade, 
       'working': working,
+      'phoneMobileWork':phoneMobileWork,
+      'phoneMobilePersonal1':phoneMobilePersonal1,
+      'phoneMobilePersonal2':phoneMobilePersonal2,
+      'phoneWork1':phoneWork1,
+      'phoneWork2':phoneWork2,
+      'phoneWork3':phoneWork3,
+      'phoneShop':phoneShop,
     };
   }
 }

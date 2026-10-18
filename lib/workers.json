@@ -5,9 +5,15 @@
     "birthday":"2026-09-25",
     "shop": "ЛПЦ-2",
     "position": "Мастер",
-    "phone": "87001234567",
     "brigade":5,
-    "working": true
+    "working": true,
+    "phoneMobileWork": "",
+    "phoneMobilePersonal1": "",
+    "phoneMobilePersonal2": "",
+    "phoneWork1": "",
+    "phoneWork2": "",
+    "phoneWork3": "",
+    "phoneShop": ""
   },
   {
     "id": "W002",
@@ -15,9 +21,15 @@
     "birthday":"2026-08-25",
     "shop": "ЛПЦ-2",
     "position": "Старший оператор",
-    "phone": "87007654321",
     "brigade":5,
-    "working": false
+    "working": false,
+    "phoneMobileWork": "+77011234567",
+    "phoneMobilePersonal1": "+77021234567",
+    "phoneMobilePersonal2": "",
+    "phoneWork1": "",
+    "phoneWork2": "",
+    "phoneWork3": "",
+    "phoneShop": ""
   },
   {
     "id": "W003",
@@ -25,9 +37,15 @@
     "birthday":"2026-07-25",
     "shop": "ЛПЦ-2",
     "position": "Начальниу уч-ка Автоматики",
-    "phone": "87007654321",
     "brigade":5,
-    "working": false
+    "working": false,
+    "phoneMobileWork": "+77011234567",
+    "phoneMobilePersonal1": "+77021234567",
+    "phoneMobilePersonal2": "",
+    "phoneWork1": "961021",
+    "phoneWork2": "",
+    "phoneWork3": "",
+    "phoneShop": "123"
   },
   {
     "id": "W004",
@@ -35,9 +53,16 @@
     "birthday":"2000-09-21",
     "shop": "ЛПЦ-2",
     "position": "Мастер уч-ка автоматики приводов",
-    "phone": "+7700123456",
     "brigade":5, 
-    "working": true
+    "working": true,
+    "phoneMobileWork": "+77011234567",
+    "phoneMobilePersonal1": "+77021234567",
+    "phoneMobilePersonal2": "",
+    "phoneWork1": "961384",
+    "phoneWork2": "",
+    "phoneWork3": "",
+    "phoneShop": "123"
+
   },
   {
     "id": "W005",
@@ -45,9 +70,15 @@
     "birthday":"2026-05-25",
     "shop": "ЛПЦ-2",
     "position": "Электромонтер ИВЦ",
-    "phone": "+77059901456",
     "brigade":5,
-    "working": true
+    "working": true,
+    "phoneMobileWork": "+77011234567",
+    "phoneMobilePersonal1": "+77021234567",
+    "phoneMobilePersonal2": "",
+    "phoneWork1": "961216",
+    "phoneWork2": "",
+    "phoneWork3": "",
+    "phoneShop": "398"
   },
   {
     "id": "W70016088",
@@ -55,9 +86,15 @@
     "birthday":"1972-07-24",
     "shop": "ЛПЦ-2",
     "position": "электромонтер ИВЦ",
-    "phone": "+77003915113",
     "brigade":5,
-    "working": true
+    "working": true,
+    "phoneMobileWork": "+77011234567",
+    "phoneMobilePersonal1": "+77021234567",
+    "phoneMobilePersonal2": "",
+    "phoneWork1": "960327",
+    "phoneWork2": "",
+    "phoneWork3": "",
+    "phoneShop": "390"
   },
   {
     "id": "W006",
@@ -65,8 +102,14 @@
     "birthday":"2026-06-10",
     "shop": "ГИВЦ",
     "position": "Дежурный инженер",
-    "phone": "+77003915113",
     "brigade":2,
-    "working": true
+    "working": true,
+    "phoneMobileWork": "+77011234567",
+    "phoneMobilePersonal1": "+77021234567",
+    "phoneMobilePersonal2": "",
+    "phoneWork1": "960255",
+    "phoneWork2": "",
+    "phoneWork3": "",
+    "phoneShop": "123"
   }       
 ]

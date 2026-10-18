@@ -6,6 +6,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 
+import 'workers_page.dart';
+
 
 void main() {
   runApp(const SRBApp());
@@ -101,6 +103,8 @@ class _HomePageState extends State<HomePage>{
         isLoadingWorkers = false;
       });
 
+      //debugPrint('Загружено работников: ${workers.length}');
+
     } catch (e) {
       if(!mounted) return;
 
@@ -111,6 +115,12 @@ class _HomePageState extends State<HomePage>{
       
     }
   } 
+
+  int countWorkersInBrigade(int brigade){
+    return workers
+      .where((worker)=>worker.brigade==brigade)
+      .length;
+  }
 
   final Set<String> holidays = {
     '2026-01-01',
@@ -294,9 +304,21 @@ class _HomePageState extends State<HomePage>{
             const SizedBox(height: 12,),
             Card(
               child: ListTile(
+                onTap: (){
+                  Navigator.push(
+                    context, 
+                    MaterialPageRoute(
+                      builder: (context) => WorkersPage(
+                        brigade: getNightBrigade(selectDate),
+                        workers: workers,
+                      ),
+                    ),
+                  );
+                },
                 title: const Text('Ночная смена'),
                 subtitle: Text(
-                  'Бригада № ${getNightBrigade(selectDate)}',
+                  'Бригада № ${getNightBrigade(selectDate)}'
+                  ' - ${countWorkersInBrigade(getNightBrigade(selectDate))} работников',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -312,9 +334,21 @@ class _HomePageState extends State<HomePage>{
             SizedBox(height: 20,),
             Card(
               child: ListTile(
+                onTap: (){
+                  Navigator.push(
+                    context, 
+                    MaterialPageRoute(
+                      builder: (context) => WorkersPage(
+                        brigade: getDayBrigade(selectDate), 
+                        workers: workers,
+                      ),
+                    ),
+                  );
+                },  
                 title: const Text('Дневная смена'),
                 subtitle: Text(
-                  'Бригада № ${getDayBrigade(selectDate)}',
+                  'Бригада № ${getDayBrigade(selectDate)}'
+                  ' - ${countWorkersInBrigade(getDayBrigade(selectDate))} работников',
                    style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
