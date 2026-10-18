@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import 'cl_worker.dart';
+import 'worker_storage.dart';
+
+import 'dart:convert';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+
 
 void main() {
   runApp(const SRBApp());
@@ -29,8 +36,98 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage>{
-  //DateTime selectDate = DateTime(2026,1,1);
   DateTime selectDate = DateTime.now();
+
+  final WorkerStorage storage = WorkerStorage();
+  List<Worker> workers = [];
+  bool isLoadingWorkers = true;
+  String? workersError;
+
+  Future<void> importWorkers() async {
+    try {
+      final selectedFile = await FilePicker.pickFile(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (selectedFile == null) return;
+
+      
+      final jsonText = await File(selectedFile.path!).readAsString();
+      
+      final List<dynamic> data = jsonDecode(jsonText);
+
+      final importedWorkers = data.map((item){
+        return Worker.fromJson(
+          Map<String,dynamic>.from(item as Map),
+        );
+      }).toList();
+
+      await storage.saveWorkers(importedWorkers);
+
+      if (!mounted) return;
+
+      setState(() {
+        workers=importedWorkers;
+        workersError=null;
+        isLoadingWorkers=false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Работники успешно импортированы'),
+        ),
+      );
+    } catch (e) {
+      if(!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Ошибка импорта: $e'),
+        ),
+      );
+    }
+  }
+
+  Future<void> loadWorkers() async {
+    try {
+      final loadedWorkers = await storage.loadWorkers();
+      
+      if(!mounted) return;
+
+      setState(() {
+        workers = loadedWorkers;
+        workersError = null;
+        isLoadingWorkers = false;
+      });
+
+    } catch (e) {
+      if(!mounted) return;
+
+      setState(() {
+        workersError = 'НЕ УДАЛОСЬ ЗАГРУЗИТЬ РАБОТНИКОВ: $e';
+        isLoadingWorkers=true;
+      });
+      
+    }
+  } 
+
+  final Set<String> holidays = {
+    '2026-01-01',
+    '2026-01-02',
+    '2026-10-25',
+    '2026-12-31',
+  };
+
+  
+  bool isHoliday(DateTime date){
+    final key = 
+      '${date.year}-'
+      '${date.month.toString().padLeft(2,'0')}-'
+      '${date.day.toString().padLeft(2,'0')}';
+    return holidays.contains(key);
+  }
+
 
   int getNightBrigade(DateTime date){
     final statDate = DateTime(2026,1,1);
@@ -56,6 +153,12 @@ class _HomePageState extends State<HomePage>{
 
   }
 
+  void goToToday(){
+    setState(() {
+      selectDate=DateTime.now();
+    });
+  }
+
   void previousDay(){
     setState(() {
       selectDate = selectDate.subtract(
@@ -72,13 +175,53 @@ class _HomePageState extends State<HomePage>{
     });
   }
 
+  Future<void> selectedDate() async {
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: selectDate, 
+      firstDate: DateTime(2000,1,1), 
+      lastDate: DateTime(2035,04,24),
+      helpText: 'Выберите дату смены',
+      cancelText: 'Отмена',
+      confirmText: 'Выбрать',
+    );
+    if (pickedDate!=null) {
+      setState(() {
+        selectDate=pickedDate;
+      });
+    }
+
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    loadWorkers();
+  }
+  
+
   @override
   Widget build(BuildContext context){
+       
+    final weekdays = [
+      'Понедельник',
+      'Вторник',
+      'Среда',
+      'Четверг',
+      'Пятница',
+      'Суббота',
+      'Воскресенье',
+    ];
+    final weekdayText = weekdays[selectDate.weekday-1];
+
+     
     final dateText = 
+      '$weekdayText, '
       '${selectDate.day.toString().padLeft(2,'0')}.'
       '${selectDate.month.toString().padLeft(2,'0')}.'
       '${selectDate.year}';
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Сменный справочник'),
@@ -88,6 +231,13 @@ class _HomePageState extends State<HomePage>{
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            
+            ElevatedButton.icon(
+              onPressed: importWorkers,
+              icon: const Icon(Icons.upload_file), 
+              label: const Text('Импорт сотрудников'),
+            ),
+
             const Text('Расписание смен', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
             const SizedBox(height: 16,),
             Card(
@@ -100,11 +250,17 @@ class _HomePageState extends State<HomePage>{
                       onPressed: previousDay,
                       icon: const Icon(Icons.chevron_left),
                     ),
-                    Text(
-                      dateText,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                    TextButton(
+                      onPressed: selectedDate,
+                      child: Text(
+                        dateText,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: isHoliday(selectDate)
+                            ?Colors.red
+                            :selectDate.weekday >= 6?Colors.green:Colors.black,
+                        ),
                       ),
                     ),
                     IconButton(
@@ -115,20 +271,60 @@ class _HomePageState extends State<HomePage>{
                 ),
               ),
             ),
+            if(isHoliday(selectDate))
+              const Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: Text(
+                  'Праздничный день',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: goToToday, 
+                icon: const Icon(Icons.today),
+                label: const Text('Сегодня')
+              ),
+            ),
             const SizedBox(height: 12,),
-            const Card(
+            Card(
               child: ListTile(
-                title: Text('Ночная смена'),
-                subtitle: Text('Бригада № 4'),
-                leading: Icon(Icons.nightlight_round),
+                title: const Text('Ночная смена'),
+                subtitle: Text(
+                  'Бригада № ${getNightBrigade(selectDate)}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                leading: const Icon(
+                  Icons.nightlight_round,
+                  color: Colors.blue,
+                  size:30,
+                ),
               ),
             ),
             SizedBox(height: 20,),
             Card(
               child: ListTile(
-                title: Text('Дневная смена'),
-                subtitle: Text('Бригада № 4'),
-                leading: Icon(Icons.wb_sunny),
+                title: const Text('Дневная смена'),
+                subtitle: Text(
+                  'Бригада № ${getDayBrigade(selectDate)}',
+                   style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                leading: const Icon(
+                  Icons.wb_sunny,
+                  color: Colors.amber,
+                  size:30,
+                ),
               ),
             ),
           ],
