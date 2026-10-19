@@ -122,6 +122,19 @@ class _HomePageState extends State<HomePage>{
       .length;
   }
 
+  bool isBrigade5Working(DateTime date, int grafic7){
+    switch(grafic7){
+      case 1:
+        //Выходные: Воскресенье и понедельник.
+        return date.weekday >= DateTime.tuesday && date.weekday <=DateTime.saturday;
+      case 2:
+        //Выходные: Пятница и суббота        
+        return (date.weekday >= DateTime.monday && date.weekday <= DateTime.thursday)||(date.weekday == DateTime.sunday);
+      default:
+        return date.weekday >=DateTime.monday && date.weekday <= DateTime.friday;
+    }
+  }
+
   final Set<String> holidays = {
     '2026-01-01',
     '2026-01-02',
@@ -357,6 +370,37 @@ class _HomePageState extends State<HomePage>{
                 leading: const Icon(
                   Icons.wb_sunny,
                   color: Colors.amber,
+                  size:30,
+                ),
+              ),
+            ),
+            SizedBox(height: 20,),
+            Card(
+              child: ListTile(
+                onTap: (){
+                  final workingWorkers = workers.where((worker){
+                    return worker.brigade==5 && worker.working && isBrigade5Working(selectDate, worker.grafic7);
+                  }).toList();
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => WorkersPage(
+                        brigade: 5, 
+                        workers: workingWorkers,
+                      ),
+                    ),
+                  );
+                },
+                title: const Text('5-я Бригада'),
+                subtitle: Text(
+                  'Работает: '
+                  '${workers.where((worker)=>(worker.brigade==5 && worker.working && isBrigade5Working(selectDate, worker.grafic7))).length} '
+                  'из ${countWorkersInBrigade(5)} работников', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold,)
+                ),
+                leading: const Icon(
+                  Icons.group,
+                  color: Colors.green,
                   size:30,
                 ),
               ),

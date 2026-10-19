@@ -5,6 +5,7 @@ class Worker{
   final String shop;
   final String position;
   final int brigade;
+  final int grafic7;
   final bool working;
   final String phoneMobileWork;
   final String phoneMobilePersonal1;
@@ -21,6 +22,7 @@ class Worker{
     required this.shop,
     required this.position,
     required this.brigade,
+    this.grafic7=0,
     required this.working,
     required this.phoneMobileWork,
     required this.phoneMobilePersonal1,
@@ -40,14 +42,15 @@ class Worker{
       shop: json['shop'] as String, 
       position: json['position'] as String, 
       brigade: json['brigade'] as int, 
+      grafic7: json['grafic7'] as int? ?? 0,
       working: json['working'] as bool,
-      phoneMobileWork:json['phoneMobileWork'] as String,
-      phoneMobilePersonal1:json['phoneMobilePersonal1'] as String,
-      phoneMobilePersonal2:json['phoneMobilePersonal2'] as String,
-      phoneWork1:json['phoneWork1'] as String,
-      phoneWork2:json['phoneWork2'] as String,
-      phoneWork3:json['phoneWork3'] as String,
-      phoneShop:json['phoneShop'] as String,
+      phoneMobileWork:json['phoneMobileWork'] as String? ?? '',
+      phoneMobilePersonal1:json['phoneMobilePersonal1'] as String? ?? '',
+      phoneMobilePersonal2:json['phoneMobilePersonal2'] as String? ?? '',
+      phoneWork1:json['phoneWork1'] as String? ?? '',
+      phoneWork2:json['phoneWork2'] as String? ?? '',
+      phoneWork3:json['phoneWork3'] as String? ?? '',
+      phoneShop:json['phoneShop'] as String? ?? '',
       );
   }
 
@@ -65,6 +68,7 @@ class Worker{
       'shop': shop, 
       'position': position, 
       'brigade': brigade, 
+      'grafic7':grafic7,
       'working': working,
       'phoneMobileWork':phoneMobileWork,
       'phoneMobilePersonal1':phoneMobilePersonal1,
