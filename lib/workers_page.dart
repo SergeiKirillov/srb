@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'cl_worker.dart';
+import 'worker_detail_page.dart';
 
 class WorkersPage extends StatelessWidget{
   final int brigade;
@@ -27,6 +28,16 @@ class WorkersPage extends StatelessWidget{
           final worker = brigadeWorkers[index];
 
           return ListTile(
+            onTap: (){
+              Navigator.push(
+                context, 
+                MaterialPageRoute(
+                  builder: (context)=>WorkerDetailPage(
+                    worker: worker,
+                  ),
+                ),
+              );
+            },
             title: Text(worker.name),
             subtitle: Text(worker.shop),
           );
