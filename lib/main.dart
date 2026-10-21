@@ -248,6 +248,47 @@ class _HomePageState extends State<HomePage>{
     return Scaffold(
       appBar: AppBar(
         title: const Text('Сменный справочник'),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (value) {
+              switch (value) {
+                case 'import':
+                  //Здесь подключим импорт работников.
+                  break;
+                case 'export':
+                  //Здесь подключим экспорт работников.
+                  break;
+                case 'about':
+                  //Информация о программе 
+                  break;
+              }
+            },
+            itemBuilder: (context)=>[
+              const PopupMenuItem(
+                value: 'import',
+                child: ListTile(
+                  leading: Icon(Icons.file_open),
+                  title: Text('Импорт работников'),
+                ),
+              ),
+              const PopupMenuItem(
+                value:'export',
+                child: ListTile(
+                  leading: Icon(Icons.save_alt),
+                  title: Text('Эксорт работников'),
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'about',
+                child: ListTile(
+                  leading: Icon(Icons.info_outline),
+                  title: Text('О программе'),   
+                ),
+              ),
+            ]
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
