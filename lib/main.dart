@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 
 import 'workers_page.dart';
+import 'all_workers_page.dart';
 
 
 void main() {
@@ -90,6 +91,45 @@ class _HomePageState extends State<HomePage>{
       );
     }
   }
+
+
+  Future<void> exportWorkers() async {
+    try {
+      final jsonText = jsonEncode(
+        workers.map((worker)=>worker.toJson()).toList(),
+      );
+      
+      final result =await FilePicker.saveFile(
+        dialogTitle:'Экспорт работников',
+        fileName: 'workers.json',
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        bytes:utf8.encode(jsonText),
+      );
+      if (!mounted) return;
+
+      if(result==null){
+        result;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Экспорт работника выполнен'),
+        ),
+      );
+    } catch (e) {
+      if(!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Ошибка Экспорта: $e'),
+        ),
+      );
+    }
+  }
+
+
+
 
   Future<void> loadWorkers() async {
     try {
@@ -253,11 +293,23 @@ class _HomePageState extends State<HomePage>{
             icon: const Icon(Icons.more_vert),
             onSelected: (value) {
               switch (value) {
+                case 'workers':
+                  Navigator.push(
+                    context, 
+                    MaterialPageRoute(
+                      builder: (context)=>AllWorkersPage(
+                        workers: workers,
+                      ),
+                    ),
+                  );
+                  break;
                 case 'import':
-                  //Здесь подключим импорт работников.
+                  //Здесь импорт работников.
+                  importWorkers();
                   break;
                 case 'export':
-                  //Здесь подключим экспорт работников.
+                  //Здесь экспорт работников.
+                  exportWorkers();
                   break;
                 case 'about':
                   //Информация о программе 
@@ -265,6 +317,13 @@ class _HomePageState extends State<HomePage>{
               }
             },
             itemBuilder: (context)=>[
+              const PopupMenuItem(
+                value: 'workers',
+                child: ListTile(
+                  leading: Icon(Icons.people),
+                  title: Text('Просмотр работников'),
+                ),
+              ),
               const PopupMenuItem(
                 value: 'import',
                 child: ListTile(
@@ -296,11 +355,11 @@ class _HomePageState extends State<HomePage>{
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             
-            ElevatedButton.icon(
-              onPressed: importWorkers,
-              icon: const Icon(Icons.upload_file), 
-              label: const Text('Импорт сотрудников'),
-            ),
+            // ElevatedButton.icon(
+            //   onPressed: importWorkers,
+            //   icon: const Icon(Icons.upload_file), 
+            //   label: const Text('Импорт сотрудников'),
+            // ),
 
             const Text('Расписание смен', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
             const SizedBox(height: 16,),
