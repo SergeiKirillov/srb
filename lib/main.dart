@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 
 import 'workers_page.dart';
 import 'all_workers_page.dart';
+//import 'worker_detail_page.dart';
 
 
 void main() {
@@ -45,6 +46,8 @@ class _HomePageState extends State<HomePage>{
   List<Worker> workers = [];
   bool isLoadingWorkers = true;
   String? workersError;
+
+
 
   Future<void> importWorkers() async {
     try {
@@ -128,7 +131,17 @@ class _HomePageState extends State<HomePage>{
     }
   }
 
+  Future<void> saveWorkers(List<Worker> updatedWorkers) async {
+    await storage.saveWorkers(updatedWorkers);
 
+    if(!mounted) return;
+
+    setState(() {
+      workers=updatedWorkers;
+    });
+
+
+  }
 
 
   Future<void> loadWorkers() async {
@@ -299,6 +312,7 @@ class _HomePageState extends State<HomePage>{
                     MaterialPageRoute(
                       builder: (context)=>AllWorkersPage(
                         workers: workers,
+                        onWorkersChanged:saveWorkers,
                       ),
                     ),
                   );

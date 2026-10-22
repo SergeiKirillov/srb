@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'cl_worker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'worker_form_page.dart';
 
 class WorkerDetailPage extends StatelessWidget{
   final Worker worker;
@@ -37,6 +38,28 @@ class WorkerDetailPage extends StatelessWidget{
     return Scaffold(
       appBar: AppBar(
         title: const Text('Карточка работника'),
+        actions: [
+          IconButton(
+            tooltip: 'Редактировать',
+            icon: const Icon(Icons.edit),
+            onPressed: () async {
+              //Открытие формы для редактирования 
+              final updatedWorker =await Navigator.push<Worker>(
+                context, 
+                MaterialPageRoute(
+                  builder: (context)=>WorkerFormPage(
+                    worker:worker,
+                    onSave: (updatedWorker) async {
+                      // Сохранение списка подключается на экране «Все работники».
+                    },
+                  ),
+                ),
+              );
+              if (!context.mounted || updatedWorker ==null) return;
+              Navigator.pop(context, updatedWorker);
+            },
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
