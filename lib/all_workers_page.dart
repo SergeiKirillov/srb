@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:srb/worker_detail_page.dart';
 import 'cl_worker.dart';
+import 'worker_form_page.dart';
 
 class AllWorkersPage extends StatefulWidget{
   final List<Worker> workers;
@@ -105,7 +106,15 @@ class _AllWorkersPageState extends State<AllWorkersPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: (){
-          // Открытие формы добавления подключим позже.
+          // Открытие формы добавления.
+          Navigator.push(
+            context, 
+            MaterialPageRoute(
+              builder: (context) => WorkerFormPage(
+                onSave: (newWorker) async {},
+              ),
+            ),
+          );
         },
         icon: const Icon(Icons.add),
         label: const Text('ADD'),
