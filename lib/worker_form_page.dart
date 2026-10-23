@@ -28,7 +28,7 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
   final _phoneWork2Controller = TextEditingController();
   final _phoneWork3Controller = TextEditingController();
   final _phoneShopController = TextEditingController();
-  DateTime _birthday = DateTime(20000,1,1);
+  DateTime _birthday = DateTime(2000,1,1);
   int _brigade = 5;
   int _grafic7 = 0;
   bool _working = true;
@@ -285,9 +285,33 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                   final oldWorker = widget.worker;
 
                   if(oldWorker==null){
+                    final newWorker = Worker(
+                      id: 'W${DateTime.now().microsecondsSinceEpoch}', 
+                      name: _nameController.text.trim(), 
+                      birthday: _birthday, 
+                      shop: _shopController.text.trim(), 
+                      position: _positionController.text.trim(), 
+                      brigade: _brigade, 
+                      grafic7: _brigade==5 ? _grafic7 : 0 ,
+                      working: _working, 
+                      phoneMobileWork: _phoneMobileWorkController.text.trim(), 
+                      phoneMobilePersonal1: _phoneMobilePersonal1Controller.text.trim(), 
+                      phoneMobilePersonal2: _phoneMobilePersonal2Controller.text.trim(), 
+                      phoneWork1: _phoneWork1Controller.text.trim(), 
+                      phoneWork2: _phoneWork2Controller.text.trim(), 
+                      phoneWork3: _phoneWork3Controller.text.trim(), 
+                      phoneShop: _phoneShopController.text.trim(),
+                    );
+                    
+                    final navigator=Navigator.of(context);
+
+                    await widget.onSave(newWorker);
+
                     if(!mounted) return; 
 
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Добавление нового работника подключим далее'),),);
+                    //ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Добавление нового работника подключим далее'),),);
+                    navigator.pop(newWorker);
+
                     return;
                   }
 

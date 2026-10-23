@@ -105,16 +105,29 @@ class _AllWorkersPageState extends State<AllWorkersPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: (){
+        onPressed: () async {
           // Открытие формы добавления.
-          Navigator.push(
+          final newWorker = await Navigator.push<Worker>(
             context, 
             MaterialPageRoute(
               builder: (context) => WorkerFormPage(
-                onSave: (newWorker) async {},
+                onSave: (newWorker) async {
+                  final updatedWorkers = [ 
+                    ...currentWorkers,
+                    newWorker,
+                  ];
+                  await widget.onWorkersChanged(updatedWorkers);
+                },
               ),
             ),
           );
+          if(!mounted || newWorker == null) return;
+          setState(() {
+            currentWorkers = [
+              ...currentWorkers,
+              newWorker,
+            ];
+          });
         },
         icon: const Icon(Icons.add),
         label: const Text('ADD'),
