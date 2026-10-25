@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'cl_worker.dart';
+import 'package:flutter/services.dart';
 
 class WorkerFormPage extends StatefulWidget{
   final Worker? worker;
@@ -14,6 +15,70 @@ class WorkerFormPage extends StatefulWidget{
   @override
   State<WorkerFormPage> createState()=>_WorkerFormPageState();
 
+}
+
+class MobilePhoneFormatter extends TextInputFormatter{
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue,TextEditingValue newValue,){
+    final digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+
+    if (digits.isEmpty){
+      return const TextEditingValue(
+        text:'',
+        selection: TextSelection.collapsed(offset: 0),
+      );
+    }
+
+    final startsWithPlusSeven = newValue.text.startsWith('+7');
+    final hasLeadingSevenCountryCode = !startsWithPlusSeven &&  digits.startsWith('7')&&digits.length>10;
+
+
+    String nationalNumber;
+    
+    if (startsWithPlusSeven || hasLeadingSevenCountryCode) {
+      nationalNumber = digits.substring(1);
+    } else {
+      nationalNumber = digits;
+    } 
+
+    if(nationalNumber.length>10){
+      nationalNumber=nationalNumber.substring(0,10);
+    }
+
+    final cursorOffset = newValue.selection.extentOffset.clamp(0, newValue.text.length).toInt();
+    
+    var digitsBeforeCursor = newValue.text.substring(0, cursorOffset).replaceAll(RegExp(r'[^0-9]'),'').length;
+
+    if (startsWithPlusSeven && cursorOffset >= 2 || hasLeadingSevenCountryCode && cursorOffset >= 1) {
+      digitsBeforeCursor --;
+    }
+
+    digitsBeforeCursor = digitsBeforeCursor.clamp(0, nationalNumber.length).toInt();
+
+    final buffer = StringBuffer('+7');
+
+    var formattedCursorOffset = 2;
+
+
+    for (var i = 0; i < nationalNumber.length; i++) {
+      if (i==0 || i==3 || i==6|| i==8) {
+        buffer.write(' ');
+        if (i<digitsBeforeCursor) {
+          formattedCursorOffset++;
+        }
+      }
+      buffer.write(nationalNumber[i]);
+
+      if (i<digitsBeforeCursor) {
+        formattedCursorOffset++;
+      }
+    }
+
+    return TextEditingValue(
+      text: buffer.toString(),
+      selection: TextSelection.collapsed(offset: formattedCursorOffset),
+    );
+  }
 }
 
 class _WorkerFormPageState extends State<WorkerFormPage>{
@@ -32,6 +97,8 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
   int _brigade = 5;
   int _grafic7 = 0;
   bool _working = true;
+
+  
 
   @override
   void initState() {
@@ -75,6 +142,47 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
     _phoneShopController.dispose();
     super.dispose();
   }
+
+  String? _validateMobilePhone(String? value){
+    final phone = value?.trim() ?? "";
+    
+    if (phone.isEmpty) return null;
+
+    final digits = phone.replaceAll(' ', '');
+
+    if (!RegExp(r'^[+]7[0-9]{10}$').hasMatch(digits)){
+      return 'Формат: +7 XXX XXX XX XX';
+    }
+
+    return null;
+  }
+
+  String? _validateWorkPhone(String? value){
+    final phone = value?.trim() ?? "";
+    
+    if (phone.isEmpty) return null;
+
+    final digits = phone.replaceAll(' ', '');
+
+    if (!RegExp(r'^96[0-9]{4}$').hasMatch(digits)){
+      return 'Формат: 96 XX XX';
+    }
+
+    return null;
+  }
+
+  String? _validateShopPhone(String? value){
+    final phone = value?.trim() ?? "";
+    
+    if (phone.isEmpty) return null;
+
+    if (!RegExp(r'^[0-9]{3}$').hasMatch(phone)){
+      return 'Формат: XXX';
+    }
+
+    return null;
+  }
+
 
   @override
   Widget build(BuildContext context){
@@ -214,6 +322,9 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                 border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.phone,
+              inputFormatters: [MobilePhoneFormatter(),],
+              validator: _validateMobilePhone,
+              
             ),
             const SizedBox(height: 12,),
             TextFormField(
@@ -222,6 +333,9 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                 labelText: 'Личный мобильный номер №1',
                 border: OutlineInputBorder(),
               ),
+              keyboardType: TextInputType.phone,
+              inputFormatters: [MobilePhoneFormatter(),],
+              validator: _validateMobilePhone,
             ),
             const SizedBox(height: 12,),
             TextFormField(
@@ -231,7 +345,10 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                 border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.phone,
+              inputFormatters: [MobilePhoneFormatter(),],
+              validator: _validateMobilePhone,
             ),
+            
             const SizedBox(height: 12,),
             TextFormField(
               controller: _phoneWork1Controller,
@@ -240,6 +357,7 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                 border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.phone,
+              validator: _validateWorkPhone,
             ),
             const SizedBox(height: 12,),
             TextFormField(
@@ -249,6 +367,7 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                 border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.phone,
+              validator: _validateWorkPhone,
             ),
             const SizedBox(height: 12,),
             TextFormField(
@@ -258,6 +377,7 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                 border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.phone,
+              validator: _validateWorkPhone,
             ),
             const SizedBox(height: 12,),
             TextFormField(
@@ -267,6 +387,7 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                 border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.phone,
+              validator: _validateShopPhone,
             ),
             const SizedBox(height: 12,),
 

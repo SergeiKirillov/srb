@@ -17,9 +17,12 @@ class WorkerDetailPage extends StatelessWidget{
     if (value.isEmpty) return null;
 
     if (mobile) {
-      //Мобильный номер должен быть в формате +7ХХХХХХХХХХХ .
-      if(RegExp(r'^\+7\d{10}$').hasMatch(value)){
-        return value;
+      //Мобильный номер должен быть в формате +7 ХХХ ХХХ ХХ ХХ .
+
+      final normalized = value.replaceAll(RegExp(r'\s+'), '');
+
+      if(RegExp(r'^\+7\d{10}$').hasMatch(normalized)){
+        return normalized;
       }
       return null;
     }
@@ -177,8 +180,10 @@ class WorkerPhoneTile extends StatelessWidget {
     if(value.isEmpty) return null;
 
     if(mobile){
-      if(RegExp(r'^\+7\d{10}$').hasMatch(value)){
-        return value;
+      final normalized = value.replaceAll(RegExp(r'\s+'), '');
+
+      if(RegExp(r'^\+7\d{10}$').hasMatch(normalized)){
+        return normalized;
       }
       return null;
     }
