@@ -14,7 +14,11 @@
   "phoneWork1": "",
   "phoneWork2": "",
   "phoneWork3": "",
-  "phoneShop": ""
+  "phoneShop": "",
+  "cityPostalCode": "101400",
+  "street": "",
+  "house": "",
+  "apartment": ""
  },
  {
   "id": "W002",
@@ -31,7 +35,11 @@
   "phoneWork1": "844444444444",
   "phoneWork2": "855555555555",
   "phoneWork3": "866666666666",
-  "phoneShop": "877777"
+  "phoneShop": "877777",
+  "cityPostalCode": "101400",
+  "street": "",
+  "house": "",
+  "apartment": ""
  },
  {
   "id": "W003",
@@ -48,7 +56,11 @@
   "phoneWork1": "961021",
   "phoneWork2": "",
   "phoneWork3": "",
-  "phoneShop": "123"
+  "phoneShop": "123",
+  "cityPostalCode": "101400",
+  "street": "",
+  "house": "",
+  "apartment": ""
  },
  {
   "id": "W004",
@@ -65,7 +77,11 @@
   "phoneWork1": "961384",
   "phoneWork2": "",
   "phoneWork3": "",
-  "phoneShop": "123"
+  "phoneShop": "123",
+  "cityPostalCode": "101400",
+  "street": "",
+  "house": "",
+  "apartment": ""
  },
  {
   "id": "W005",
@@ -82,7 +98,11 @@
   "phoneWork1": "961216",
   "phoneWork2": "",
   "phoneWork3": "",
-  "phoneShop": "398"
+  "phoneShop": "398",
+  "cityPostalCode": "101400",
+  "street": "",
+  "house": "",
+  "apartment": ""
  },
  {
   "id": "W70016088",
@@ -99,7 +119,11 @@
   "phoneWork1": "960327",
   "phoneWork2": "",
   "phoneWork3": "",
-  "phoneShop": "390"
+  "phoneShop": "390",
+  "cityPostalCode": "101400",
+  "street": "",
+  "house": "",
+  "apartment": ""
  },
  {
   "id": "W006",
@@ -116,7 +140,11 @@
   "phoneWork1": "960255",
   "phoneWork2": "",
   "phoneWork3": "",
-  "phoneShop": "123"
+  "phoneShop": "123",
+  "cityPostalCode": "101400",
+  "street": "",
+  "house": "",
+  "apartment": ""
  },
  {
   "id": "W1792772723710453",
@@ -133,6 +161,10 @@
   "phoneWork1": "",
   "phoneWork2": "",
   "phoneWork3": "",
-  "phoneShop": ""
+  "phoneShop": "",
+  "cityPostalCode": "101400",
+  "street": "",
+  "house": "",
+  "apartment": ""
  }
 ]

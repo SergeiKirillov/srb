@@ -4,6 +4,10 @@ class Worker{
   final DateTime birthday;
   final String shop;
   final String position;
+  final String cityPostalCode;
+  final String street;
+  final String house;
+  final String apartment; 
   final int brigade;
   final int grafic7;
   final bool working;
@@ -21,6 +25,10 @@ class Worker{
     required this.birthday,
     required this.shop,
     required this.position,
+    this.cityPostalCode = '101400',
+    this.street = '',
+    this.house = '',
+    this.apartment = '',
     required this.brigade,
     this.grafic7=0,
     required this.working,
@@ -41,6 +49,10 @@ class Worker{
       birthday: DateTime.parse(json['birthday'] as String), 
       shop: json['shop'] as String, 
       position: json['position'] as String, 
+      cityPostalCode:json['cityPostalCode'] as String? ?? '101400',
+      street: json['street'] as String? ?? '',
+      house: json['house'] as String? ?? '',
+      apartment: json['apartment'] as String? ?? '',
       brigade: json['brigade'] as int, 
       grafic7: json['grafic7'] as int? ?? 0,
       working: json['working'] as bool,
@@ -67,6 +79,10 @@ class Worker{
       'birthday': birthdayText, 
       'shop': shop, 
       'position': position, 
+      'cityPostalCode': cityPostalCode,
+      'street': street,
+      'house': house,
+      'apartment': apartment,
       'brigade': brigade, 
       'grafic7':grafic7,
       'working': working,

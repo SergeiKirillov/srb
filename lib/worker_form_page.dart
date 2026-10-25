@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'cl_worker.dart';
 import 'package:flutter/services.dart';
+import 'cl_city.dart';
+import 'city_storage.dart';
+
 
 class WorkerFormPage extends StatefulWidget{
   final Worker? worker;
@@ -86,6 +89,12 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
   final _nameController =TextEditingController();
   final _shopController = TextEditingController();
   final _positionController = TextEditingController();
+  final _streetController = TextEditingController();
+  final _houseController = TextEditingController();
+  final _apartmentController = TextEditingController();
+  final CityStorage _cityStorage = CityStorage();
+  List<City> _cities = [];
+  String _cityPostalCode = '101400';
   final _phoneMobileWorkController = TextEditingController();
   final _phoneMobilePersonal1Controller = TextEditingController();
   final _phoneMobilePersonal2Controller = TextEditingController();
@@ -98,11 +107,15 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
   int _grafic7 = 0;
   bool _working = true;
 
+
+
+
   
 
   @override
   void initState() {
     super.initState();
+    _loadCities();
 
     final worker = widget.worker;
 
@@ -110,6 +123,9 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
       _nameController.text = worker.name;
       _shopController.text = worker.shop;
       _positionController.text = worker.position;
+      _streetController.text = worker.street;
+      _houseController.text = worker.house;
+      _apartmentController.text = worker.apartment;
       _birthday = widget.worker!.birthday;
       _brigade = widget.worker!.brigade;
       _grafic7 = widget.worker!.grafic7;
@@ -128,11 +144,36 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
     }
   }
 
+  Future<void> _loadCities() async {
+    final cities = await _cityStorage.loadCities();
+
+    if(!mounted) return;
+
+    setState(() {
+      _cities = cities;
+
+      final worker = widget.worker;
+      final savedPostalCode = worker?.cityPostalCode ?? '101400';
+
+      if (cities.any((city)=>city.postalCode == savedPostalCode)) {
+        _cityPostalCode = savedPostalCode;
+      } else if (cities.any((city) => city.postalCode == '101400')) {
+        _cityPostalCode = '101400';
+      } else if (cities.isNotEmpty){
+        _cityPostalCode = cities.first.postalCode;
+      }
+    },);
+  }
+
+
   @override
   void dispose(){
     _nameController.dispose();
     _shopController.dispose();
     _positionController.dispose();
+    _streetController.dispose();
+    _houseController.dispose();
+    _apartmentController.dispose();
     _phoneMobileWorkController.dispose();
     _phoneMobilePersonal1Controller.dispose();
     _phoneMobilePersonal2Controller.dispose();
@@ -140,6 +181,7 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
     _phoneWork2Controller.dispose();
     _phoneWork3Controller.dispose();
     _phoneShopController.dispose();
+
     super.dispose();
   }
 
@@ -228,6 +270,66 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                 border: OutlineInputBorder(),
               ),
             ),
+
+            //-----------------------------------------------------------------------------
+            const SizedBox(height: 16,),
+            DropdownButtonFormField<String>(
+              initialValue: _cities.any(
+                (city) => city.postalCode == _cityPostalCode,
+              )
+                ? _cityPostalCode
+                : null,
+              decoration: const InputDecoration(
+                labelText: 'Город',
+                border:  OutlineInputBorder(),
+              ),
+              items: _cities.map((city){
+                return DropdownMenuItem<String>(
+                  value: city.postalCode,
+                  child: Text('${city.name} (${city.postalCode})'),
+                );
+              }).toList(), 
+              validator: (value){
+                if(value == null || value.isEmpty){
+                  return 'Выберите город';
+                }
+                return null;
+              },
+              onChanged: (value){
+                if (value != null) {
+                  setState(() {
+                    _cityPostalCode=value;
+                  });
+                }
+              },
+            ),
+            const SizedBox(height: 16,),
+            TextFormField(
+              controller: _streetController,
+              decoration: const InputDecoration(
+                labelText: 'Улица (необязательно)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16,),
+            TextFormField(
+              controller: _houseController,
+              decoration: const InputDecoration(
+                labelText: 'Дом (необязательно)',
+                border: OutlineInputBorder(),
+              ),                
+            ),
+            const SizedBox(height: 16,),
+            TextFormField(
+              controller: _apartmentController,
+              decoration: const InputDecoration(
+                labelText: 'Квартира (необязательно)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16,),
+            //----------------------------------------------------------------------
+
             ListTile(
               title: const Text('Дата рождения'),
               subtitle: Text(
@@ -348,7 +450,7 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
               inputFormatters: [MobilePhoneFormatter(),],
               validator: _validateMobilePhone,
             ),
-            
+
             const SizedBox(height: 12,),
             TextFormField(
               controller: _phoneWork1Controller,
@@ -412,6 +514,10 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                       birthday: _birthday, 
                       shop: _shopController.text.trim(), 
                       position: _positionController.text.trim(), 
+                      cityPostalCode: _cityPostalCode,
+                      street: _streetController.text.trim(),
+                      house: _houseController.text.trim(),
+                      apartment: _apartmentController.text.trim(),
                       brigade: _brigade, 
                       grafic7: _brigade==5 ? _grafic7 : 0 ,
                       working: _working, 
@@ -442,6 +548,10 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                     birthday: _birthday, 
                     shop: _shopController.text.trim(), 
                     position: _positionController.text.trim(), 
+                    cityPostalCode: _cityPostalCode,
+                    street: _streetController.text.trim(),
+                    house: _houseController.text.trim(),
+                    apartment: _apartmentController.text.trim(),
                     brigade: _brigade, 
                     grafic7: _brigade==5?_grafic7:0,
                     working: _working, 

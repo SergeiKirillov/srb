@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:srb/city_storage.dart';
 import 'cl_worker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'worker_form_page.dart';
+
+
 
 class WorkerDetailPage extends StatelessWidget{
   final Worker worker;
@@ -86,6 +89,39 @@ class WorkerDetailPage extends StatelessWidget{
             leading: const Icon(Icons.work),
             title: const Text('Должность'),
             subtitle: Text(worker.position),
+          ),
+          
+          ListTile(
+            leading: const Icon(Icons.location_on),
+            title: const Text('Адрес'),
+            subtitle: FutureBuilder(
+              future: CityStorage().loadCities(), 
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting){
+                  return const Text('Загрузка адреса...');
+                }    
+                if (snapshot.hasError){
+                  return const Text('Ошибка загрузки адреса');
+                }
+                final cities = snapshot.data ?? [];
+
+                final matchingCities = cities.where(
+                  (city)=>city.postalCode == worker.cityPostalCode,
+                );
+
+                final cityName = matchingCities.isNotEmpty ? matchingCities.first.name : 'Город не найден';
+
+                final addressParts = <String> [
+                  cityName,
+                  if(worker.street.isNotEmpty) 'ул. ${worker.street}',
+                  if(worker.house.isNotEmpty) 'д. ${worker.house}',
+                  if(worker.apartment.isNotEmpty) 'кв. ${worker.apartment}',
+                ];
+
+                return Text(addressParts.join(', '));
+
+              },
+            ),    
           ),
 
           ListTile(
