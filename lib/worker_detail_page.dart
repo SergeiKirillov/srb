@@ -158,38 +158,45 @@ class WorkerDetailPage extends StatelessWidget{
             title: 'Рабочий мобильный', 
             phone: worker.phoneMobileWork,
             mobile: true,
+            cityPostalCode: worker.cityPostalCode,
           ),
 
           WorkerPhoneTile(
             title: 'Личный мобильный 1', 
             phone: worker.phoneMobilePersonal1,
             mobile: true,
+            cityPostalCode: worker.cityPostalCode,
           ),
 
           WorkerPhoneTile(
             title: 'Личный мобильный 2', 
             phone: worker.phoneMobilePersonal2,
             mobile: true,
+            cityPostalCode: worker.cityPostalCode,
           ),
 
           WorkerPhoneTile(
             title: 'Рабочий телефон 1', 
             phone: worker.phoneWork1,
+            cityPostalCode: worker.cityPostalCode,
           ),
 
           WorkerPhoneTile(
             title: 'Рабочий телефон 2', 
             phone: worker.phoneWork2,
+            cityPostalCode: worker.cityPostalCode,
           ),
 
           WorkerPhoneTile(
             title: 'Рабочий телефон 3', 
             phone: worker.phoneWork3,
+            cityPostalCode: worker.cityPostalCode,
           ),
 
           WorkerPhoneTile(
             title: 'Цеховой телефон', 
             phone: worker.phoneShop,
+            cityPostalCode: worker.cityPostalCode,
           ),
 
         ],
@@ -202,12 +209,14 @@ class WorkerPhoneTile extends StatelessWidget {
   final String title;
   final String phone;
   final bool mobile;
+  final String cityPostalCode;
 
   const WorkerPhoneTile({
     super.key,
     required this.title,
     required this.phone,
     this.mobile = false,
+    required this.cityPostalCode,
   });
 
   String? preparePhoneNumber(){
@@ -224,8 +233,10 @@ class WorkerPhoneTile extends StatelessWidget {
       return null;
     }
 
-    if(RegExp(r'^\d{6}$').hasMatch(value)){
-      return '+77213$value';
+    final digits = value.replaceAll(RegExp(r'\s+'), '');
+    if(RegExp(r'^96\d{4}$').hasMatch(digits)){
+      //return '+77213$value';
+      return digits;
     }
     return null;
   }
@@ -253,10 +264,60 @@ class WorkerPhoneTile extends StatelessWidget {
           icon: const Icon(Icons.call),
           tooltip: 'Позвонить',
           onPressed: () async {
+            String dialNumber = number;
+
+            if(!mobile){
+              try {
+                final cities = await CityStorage().loadCities();
+
+                final matchingCities = cities.where(
+                  (city) => city.postalCode == cityPostalCode,
+                );
+
+                if( matchingCities.isEmpty || matchingCities.first.phoneCode.trim().isEmpty){
+                  if(context.mounted){
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Не найден телефонный код города. '
+                          'Проверте справичник городов.'
+                        ),
+                      ),
+                    );
+                  }
+                  return;
+                } 
+                
+                final phoneCode = matchingCities.first.phoneCode.trim();
+
+                if(!RegExp(r'^\+\d+$').hasMatch(phoneCode)){
+                  if(context.mounted){
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Неверный телефонный код города.'),
+                      ),
+                    );
+                  }
+                  return;
+                }
+                
+                dialNumber = '$phoneCode$number';
+              } catch (_) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Не удалось загрузить справочник городов'),
+                    ),
+                  );
+                }
+                return;
+              }
+            }
             final uri = Uri(
               scheme: 'tel',
-              path: number,
+              path: dialNumber,
             );
+
             try {
               final launched  = await launchUrl(uri);
               if (!launched && context.mounted) {

@@ -84,6 +84,46 @@ class MobilePhoneFormatter extends TextInputFormatter{
   }
 }
 
+class WorkPhoneFormatter extends TextInputFormatter{
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue){
+    final digitsBeforeCursor = newValue.text.substring(
+      0,newValue.selection.extentOffset.clamp(
+        0, 
+        newValue.text.length,
+      ))
+      .replaceAll(RegExp(r'\D'),'')
+      .length;
+
+    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    final limitedDigits = digits.length > 6 
+      ? digits.substring(0,6) 
+      : digits;
+
+    final buffer = StringBuffer();
+
+    for (var i = 0; i < limitedDigits.length; i++) {
+      if(i == 2 || i == 4){
+        buffer.write(' ');
+      }
+      buffer.write(limitedDigits[i]);
+    }
+
+    final formatted = buffer.toString();
+
+    var cursorPosition = digitsBeforeCursor.clamp(0, limitedDigits.length);
+    if(cursorPosition>2) cursorPosition++;
+    if(cursorPosition>5) cursorPosition++;
+
+    cursorPosition=cursorPosition.clamp(0,formatted.length);
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: cursorPosition),
+    );
+  }
+}
+
 class _WorkerFormPageState extends State<WorkerFormPage>{
   final _formKey =GlobalKey<FormState>();
   final _nameController =TextEditingController();
@@ -451,6 +491,7 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
               validator: _validateMobilePhone,
             ),
 
+            //-------------------------------------------------------
             const SizedBox(height: 12,),
             TextFormField(
               controller: _phoneWork1Controller,
@@ -459,6 +500,7 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                 border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.phone,
+              inputFormatters: [WorkPhoneFormatter()],
               validator: _validateWorkPhone,
             ),
             const SizedBox(height: 12,),
@@ -469,6 +511,7 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                 border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.phone,
+              inputFormatters: [WorkPhoneFormatter()],
               validator: _validateWorkPhone,
             ),
             const SizedBox(height: 12,),
@@ -479,8 +522,11 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                 border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.phone,
+              inputFormatters: [WorkPhoneFormatter()],
               validator: _validateWorkPhone,
             ),
+
+            //------------------------------------------------------------------
             const SizedBox(height: 12,),
             TextFormField(
               controller: _phoneShopController,
