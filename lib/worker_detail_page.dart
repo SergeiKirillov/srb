@@ -67,139 +67,141 @@ class WorkerDetailPage extends StatelessWidget{
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(
-            worker.name,
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 20,),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Text(
+              worker.name,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 20,),
           
-          ListTile(
-            leading: const Icon(Icons.cake),
-            title: const Text('Дата рождения'),
-            subtitle: Text(
-              '${worker.birthday.day.toString().padLeft(2,'0')}.'
-              '${worker.birthday.month.toString().padLeft(2,'0')}.'
-              '${worker.birthday.year}',
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.work),
-            title: const Text('Должность'),
-            subtitle: Text(worker.position),
-          ),
-          
-          ListTile(
-            leading: const Icon(Icons.location_on),
-            title: const Text('Адрес'),
-            subtitle: FutureBuilder(
-              future: CityStorage().loadCities(), 
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting){
-                  return const Text('Загрузка адреса...');
-                }    
-                if (snapshot.hasError){
-                  return const Text('Ошибка загрузки адреса');
-                }
-                final cities = snapshot.data ?? [];
-
-                final matchingCities = cities.where(
-                  (city)=>city.postalCode == worker.cityPostalCode,
-                );
-
-                final cityName = matchingCities.isNotEmpty ? matchingCities.first.name : 'Город не найден';
-
-                final addressParts = <String> [
-                  cityName,
-                  if(worker.street.isNotEmpty) 'ул. ${worker.street}',
-                  if(worker.house.isNotEmpty) 'д. ${worker.house}',
-                  if(worker.apartment.isNotEmpty) 'кв. ${worker.apartment}',
-                ];
-
-                return Text(addressParts.join(', '));
-
-              },
-            ),    
-          ),
-
-          ListTile(
-            leading: const Icon(Icons.groups),
-            title: const Text('Бригада'),
-            subtitle: Text('${worker.brigade}'),
-          ),
-
-          ListTile(
-            leading: Icon(
-              worker.working ? Icons.check_circle: Icons.cancel,
-              color: worker.working ? Colors.green:Colors.red,
-            ),
-            title: const Text('Статус'),
-            subtitle: Text( 
-              worker.working ? 'Работает':'Не работает',
-            ),
-          ),
-
-          const Divider(),
-
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: Text(
-              'Телефоны',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+            ListTile(
+              leading: const Icon(Icons.cake),
+              title: const Text('Дата рождения'),
+              subtitle: Text(
+                '${worker.birthday.day.toString().padLeft(2,'0')}.'
+                '${worker.birthday.month.toString().padLeft(2,'0')}.'
+                '${worker.birthday.year}',
               ),
             ),
-          ),
+            ListTile(
+              leading: const Icon(Icons.work),
+              title: const Text('Должность'),
+              subtitle: Text(worker.position),
+            ),
+          
+            ListTile(
+              leading: const Icon(Icons.location_on),
+              title: const Text('Адрес'),
+              subtitle: FutureBuilder(
+                future: CityStorage().loadCities(), 
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting){
+                    return const Text('Загрузка адреса...');
+                  }    
+                  if (snapshot.hasError){
+                    return const Text('Ошибка загрузки адреса');
+                  }
+                  final cities = snapshot.data ?? [];
 
-          WorkerPhoneTile(
-            title: 'Рабочий мобильный', 
-            phone: worker.phoneMobileWork,
-            mobile: true,
-            cityPostalCode: worker.cityPostalCode,
-          ),
+                  final matchingCities = cities.where(
+                    (city)=>city.postalCode == worker.cityPostalCode,
+                  );
 
-          WorkerPhoneTile(
-            title: 'Личный мобильный 1', 
-            phone: worker.phoneMobilePersonal1,
-            mobile: true,
-            cityPostalCode: worker.cityPostalCode,
-          ),
+                  final cityName = matchingCities.isNotEmpty ? matchingCities.first.name : 'Город не найден';
 
-          WorkerPhoneTile(
-            title: 'Личный мобильный 2', 
-            phone: worker.phoneMobilePersonal2,
-            mobile: true,
-            cityPostalCode: worker.cityPostalCode,
-          ),
+                  final addressParts = <String> [
+                    cityName,
+                    if(worker.street.isNotEmpty) 'ул. ${worker.street}',
+                    if(worker.house.isNotEmpty) 'д. ${worker.house}',
+                    if(worker.apartment.isNotEmpty) 'кв. ${worker.apartment}',
+                  ];
 
-          WorkerPhoneTile(
-            title: 'Рабочий телефон 1', 
-            phone: worker.phoneWork1,
-            cityPostalCode: worker.cityPostalCode,
-          ),
+                  return Text(addressParts.join(', '));
 
-          WorkerPhoneTile(
-            title: 'Рабочий телефон 2', 
-            phone: worker.phoneWork2,
-            cityPostalCode: worker.cityPostalCode,
-          ),
+                },
+              ),    
+            ),
 
-          WorkerPhoneTile(
-            title: 'Рабочий телефон 3', 
-            phone: worker.phoneWork3,
-            cityPostalCode: worker.cityPostalCode,
-          ),
+            ListTile(
+              leading: const Icon(Icons.groups),
+              title: const Text('Бригада'),
+              subtitle: Text('${worker.brigade}'),
+            ),
 
-          WorkerPhoneTile(
-            title: 'Цеховой телефон', 
-            phone: worker.phoneShop,
-            cityPostalCode: worker.cityPostalCode,
-          ),
+            ListTile(
+              leading: Icon(
+                worker.working ? Icons.check_circle: Icons.cancel,
+                color: worker.working ? Colors.green:Colors.red,
+              ),
+              title: const Text('Статус'),
+              subtitle: Text( 
+                worker.working ? 'Работает':'Не работает',
+              ),
+            ),
 
-        ],
+            const Divider(),
+
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'Телефоны',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+
+            WorkerPhoneTile(
+              title: 'Рабочий мобильный', 
+              phone: worker.phoneMobileWork,
+              mobile: true,
+              cityPostalCode: worker.cityPostalCode,
+            ),
+
+            WorkerPhoneTile(
+              title: 'Личный мобильный 1', 
+              phone: worker.phoneMobilePersonal1,
+              mobile: true,
+              cityPostalCode: worker.cityPostalCode,
+            ),
+
+            WorkerPhoneTile(
+              title: 'Личный мобильный 2', 
+              phone: worker.phoneMobilePersonal2,
+              mobile: true,
+              cityPostalCode: worker.cityPostalCode,
+            ),
+
+            WorkerPhoneTile(
+              title: 'Рабочий телефон 1', 
+              phone: worker.phoneWork1,
+              cityPostalCode: worker.cityPostalCode,
+            ),
+
+            WorkerPhoneTile(
+              title: 'Рабочий телефон 2', 
+              phone: worker.phoneWork2,
+              cityPostalCode: worker.cityPostalCode,
+            ),
+
+            WorkerPhoneTile(
+              title: 'Рабочий телефон 3', 
+              phone: worker.phoneWork3,
+              cityPostalCode: worker.cityPostalCode,
+            ),
+
+            WorkerPhoneTile(
+              title: 'Цеховой телефон', 
+              phone: worker.phoneShop,
+              cityPostalCode: worker.cityPostalCode,
+            ),
+
+          ],
+        ),
       ),
     );
   }

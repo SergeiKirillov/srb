@@ -387,16 +387,22 @@ class _HomePageState extends State<HomePage>{
                       onPressed: previousDay,
                       icon: const Icon(Icons.chevron_left),
                     ),
-                    TextButton(
-                      onPressed: selectedDate,
-                      child: Text(
-                        dateText,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: isHoliday(selectDate)
-                            ?Colors.red
-                            :selectDate.weekday >= 6?Colors.green:Colors.black,
+                    Expanded(
+                      child: TextButton(
+                        onPressed: selectedDate,
+                        child: Text(
+                          dateText,
+                          textAlign: TextAlign.center,
+                          softWrap: true,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: isHoliday(selectDate)
+                              ?Colors.red
+                              :selectDate.weekday >= 6
+                                ?Colors.green
+                                :Colors.black,
+                          ),
                         ),
                       ),
                     ),
