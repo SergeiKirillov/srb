@@ -10,6 +10,9 @@ import 'workers_page.dart';
 import 'all_workers_page.dart';
 //import 'worker_detail_page.dart';
 
+import 'package:flutter/services.dart';
+
+const widgetChannel = MethodChannel('com.example.srb/widget');
 
 void main() {
   runApp(const SRBApp());
@@ -41,6 +44,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>{
   DateTime selectDate = DateTime.now();
+  int? requiredBrigade;
 
   final WorkerStorage storage = WorkerStorage();
   List<Worker> workers = [];
@@ -155,6 +159,7 @@ class _HomePageState extends State<HomePage>{
         workersError = null;
         isLoadingWorkers = false;
       });
+      openRequestedBrigade();
 
       //debugPrint('Загружено работников: ${workers.length}');
 
@@ -168,6 +173,29 @@ class _HomePageState extends State<HomePage>{
       
     }
   } 
+
+  void openRequestedBrigade(){
+    final brigade = requiredBrigade;
+
+    if(brigade == null || isLoadingWorkers || workersError != null) {
+      return;
+    }
+
+    requiredBrigade =null;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => WorkersPage(
+            brigade:brigade,
+            workers: workers,
+          ),
+        ),
+      );
+    });
+  }
 
   int countWorkersInBrigade(int brigade){
     return workers
@@ -273,6 +301,24 @@ class _HomePageState extends State<HomePage>{
   @override
   void initState() {
     super.initState();
+
+    widgetChannel.setMethodCallHandler((call) async {
+      if (call.method == 'openBrigade') {
+        final brigade = call.arguments as int;
+
+        if (brigade < 1 || brigade > 4) {
+          return;
+        }
+
+        if (!mounted) return;
+
+        setState(() {
+          requiredBrigade = brigade;
+        });
+
+        openRequestedBrigade();
+      }
+    });
     loadWorkers();
   }
   
