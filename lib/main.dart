@@ -245,6 +245,15 @@ class _HomePageState extends State<HomePage>{
     return brigades[days % 4];
   }
 
+  int getPreviousNightBrigade(DateTime date){
+    final previousDate = DateTime(
+      date.year,
+      date.month,
+      date.day-1,
+    );
+    return getNightBrigade(previousDate);
+  }
+
   int getDayBrigade(DateTime date){
     final nightBrigade = getNightBrigade(date);
     return switch(nightBrigade){
@@ -336,13 +345,18 @@ class _HomePageState extends State<HomePage>{
       'Воскресенье',
     ];
     final weekdayText = weekdays[selectDate.weekday-1];
-
-     
+         
     final dateText = 
       '$weekdayText, '
       '${selectDate.day.toString().padLeft(2,'0')}.'
       '${selectDate.month.toString().padLeft(2,'0')}.'
       '${selectDate.year}';
+
+    
+    final previousNight = getPreviousNightBrigade(selectDate);
+    final day = getDayBrigade(selectDate);
+    final nextNight = getNightBrigade(selectDate);
+  
 
     return Scaffold(
       appBar: AppBar(
@@ -455,7 +469,7 @@ class _HomePageState extends State<HomePage>{
                     IconButton(
                       onPressed: nextDay, 
                       icon: const Icon(Icons.chevron_right),
-                    ),
+                    ),                    
                   ],
                 ),
               ),
@@ -481,6 +495,7 @@ class _HomePageState extends State<HomePage>{
               ),
             ),
             const SizedBox(height: 12,),
+            //------------------------------
             Card(
               child: ListTile(
                 onTap: (){
@@ -488,29 +503,31 @@ class _HomePageState extends State<HomePage>{
                     context, 
                     MaterialPageRoute(
                       builder: (context) => WorkersPage(
-                        brigade: getNightBrigade(selectDate),
+                        brigade: previousNight, 
                         workers: workers,
                       ),
                     ),
                   );
                 },
-                title: const Text('Ночная смена'),
+                title: const Text('Предыдущая ночная смена'),
                 subtitle: Text(
-                  'Бригада № ${getNightBrigade(selectDate)}'
-                  ' - ${countWorkersInBrigade(getNightBrigade(selectDate))} работников',
+                  '19:00 - 7:00 | Бригада №$previousNight'
+                  ' - ${countWorkersInBrigade(previousNight)} работников',
                   style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                    fontSize:18,
+                    fontWeight:FontWeight.bold,
                   ),
-                ),
+                ),  
                 leading: const Icon(
                   Icons.nightlight_round,
                   color: Colors.blue,
-                  size:30,
+                  size: 30,
                 ),
               ),
             ),
-            SizedBox(height: 20,),
+            //------------------------------
+            const SizedBox(height: 12,),
+
             Card(
               child: ListTile(
                 onTap: (){
@@ -518,7 +535,7 @@ class _HomePageState extends State<HomePage>{
                     context, 
                     MaterialPageRoute(
                       builder: (context) => WorkersPage(
-                        brigade: getDayBrigade(selectDate), 
+                        brigade: day, 
                         workers: workers,
                       ),
                     ),
@@ -526,8 +543,8 @@ class _HomePageState extends State<HomePage>{
                 },  
                 title: const Text('Дневная смена'),
                 subtitle: Text(
-                  'Бригада № ${getDayBrigade(selectDate)}'
-                  ' - ${countWorkersInBrigade(getDayBrigade(selectDate))} работников',
+                  '07:00 - 19:00 | Бригада № $day'
+                  ' - ${countWorkersInBrigade(day)} работников',
                    style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -540,6 +557,39 @@ class _HomePageState extends State<HomePage>{
                 ),
               ),
             ),
+
+            Card(
+              child: ListTile(
+                onTap: (){
+                  Navigator.push(
+                    context, 
+                    MaterialPageRoute(
+                      builder: (context) => WorkersPage(
+                        brigade: nextNight,
+                        workers: workers,
+                      ),
+                    ),
+                  );
+                },
+                title: const Text('Ночная смена (следующая)'),
+                subtitle: Text(
+                  '19:00 - 7:00 | Бригада № $nextNight'
+                  ' - ${countWorkersInBrigade(nextNight)} работников',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                leading: const Icon(
+                  Icons.nightlight_round,
+                  color: Colors.blue,
+                  size:30,
+                ),
+              ),
+            ),
+            SizedBox(height: 20,),  
+
+
             SizedBox(height: 20,),
             Card(
               child: ListTile(
@@ -572,6 +622,7 @@ class _HomePageState extends State<HomePage>{
               ),
             ),
           ],
+          
         ),
       ),
     );
