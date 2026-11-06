@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+
 import 'cl_worker.dart';
 import 'worker_storage.dart';
 
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 
 import 'workers_page.dart';
@@ -37,12 +39,12 @@ class SRBApp extends StatelessWidget {
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
-  
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage>{
+class _HomePageState extends State<HomePage> {
   DateTime selectDate = DateTime.now();
   int? requiredBrigade;
 
@@ -50,8 +52,6 @@ class _HomePageState extends State<HomePage>{
   List<Worker> workers = [];
   bool isLoadingWorkers = true;
   String? workersError;
-
-
 
   Future<void> importWorkers() async {
     try {
@@ -62,15 +62,12 @@ class _HomePageState extends State<HomePage>{
 
       if (selectedFile == null) return;
 
-      
       final jsonText = await File(selectedFile.path!).readAsString();
-      
+
       final List<dynamic> data = jsonDecode(jsonText);
 
-      final importedWorkers = data.map((item){
-        return Worker.fromJson(
-          Map<String,dynamic>.from(item as Map),
-        );
+      final importedWorkers = data.map((item) {
+        return Worker.fromJson(Map<String, dynamic>.from(item as Map));
       }).toList();
 
       await storage.saveWorkers(importedWorkers);
@@ -78,81 +75,67 @@ class _HomePageState extends State<HomePage>{
       if (!mounted) return;
 
       setState(() {
-        workers=importedWorkers;
-        workersError=null;
-        isLoadingWorkers=false;
+        workers = importedWorkers;
+        workersError = null;
+        isLoadingWorkers = false;
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Работники успешно импортированы'),
-        ),
+        const SnackBar(content: Text('Работники успешно импортированы')),
       );
     } catch (e) {
-      if(!mounted) return;
+      if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Ошибка импорта: $e'),
-        ),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Ошибка импорта: $e')));
     }
   }
-
 
   Future<void> exportWorkers() async {
     try {
       final jsonText = jsonEncode(
-        workers.map((worker)=>worker.toJson()).toList(),
+        workers.map((worker) => worker.toJson()).toList(),
       );
-      
-      final result =await FilePicker.saveFile(
-        dialogTitle:'Экспорт работников',
+
+      final result = await FilePicker.saveFile(
+        dialogTitle: 'Экспорт работников',
         fileName: 'workers.json',
         type: FileType.custom,
         allowedExtensions: ['json'],
-        bytes:utf8.encode(jsonText),
+        bytes: utf8.encode(jsonText),
       );
       if (!mounted) return;
 
-      if(result==null){
+      if (result == null) {
         result;
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Экспорт работника выполнен'),
-        ),
+        const SnackBar(content: Text('Экспорт работника выполнен')),
       );
     } catch (e) {
-      if(!mounted) return;
+      if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Ошибка Экспорта: $e'),
-        ),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Ошибка Экспорта: $e')));
     }
   }
 
   Future<void> saveWorkers(List<Worker> updatedWorkers) async {
     await storage.saveWorkers(updatedWorkers);
 
-    if(!mounted) return;
+    if (!mounted) return;
 
     setState(() {
-      workers=updatedWorkers;
+      workers = updatedWorkers;
     });
-
-
   }
-
 
   Future<void> loadWorkers() async {
     try {
       final loadedWorkers = await storage.loadWorkers();
-      
-      if(!mounted) return;
+
+      if (!mounted) return;
 
       setState(() {
         workers = loadedWorkers;
@@ -162,57 +145,54 @@ class _HomePageState extends State<HomePage>{
       openRequestedBrigade();
 
       //debugPrint('Загружено работников: ${workers.length}');
-
     } catch (e) {
-      if(!mounted) return;
+      if (!mounted) return;
 
       setState(() {
         workersError = 'НЕ УДАЛОСЬ ЗАГРУЗИТЬ РАБОТНИКОВ: $e';
-        isLoadingWorkers=true;
+        isLoadingWorkers = true;
       });
-      
     }
-  } 
+  }
 
-  void openRequestedBrigade(){
+  void openRequestedBrigade() {
     final brigade = requiredBrigade;
 
-    if(brigade == null || isLoadingWorkers || workersError != null) {
+    if (brigade == null || isLoadingWorkers || workersError != null) {
       return;
     }
 
-    requiredBrigade =null;
+    requiredBrigade = null;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => WorkersPage(
-            brigade:brigade,
-            workers: workers,
-          ),
+          builder: (context) => WorkersPage(brigade: brigade, workers: workers),
         ),
       );
     });
   }
 
-  int countWorkersInBrigade(int brigade){
-    return workers
-      .where((worker)=>worker.brigade==brigade)
-      .length;
+  int countWorkersInBrigade(int brigade) {
+    return workers.where((worker) => worker.brigade == brigade).length;
   }
 
-  bool isBrigade5Working(DateTime date, int grafic7){
-    switch(grafic7){
+  bool isBrigade5Working(DateTime date, int grafic7) {
+    switch (grafic7) {
       case 1:
         //Выходные: Воскресенье и понедельник.
-        return date.weekday >= DateTime.tuesday && date.weekday <=DateTime.saturday;
+        return date.weekday >= DateTime.tuesday &&
+            date.weekday <= DateTime.saturday;
       case 2:
-        //Выходные: Пятница и суббота        
-        return (date.weekday >= DateTime.monday && date.weekday <= DateTime.thursday)||(date.weekday == DateTime.sunday);
+        //Выходные: Пятница и суббота
+        return (date.weekday >= DateTime.monday &&
+                date.weekday <= DateTime.thursday) ||
+            (date.weekday == DateTime.sunday);
       default:
-        return date.weekday >=DateTime.monday && date.weekday <= DateTime.friday;
+        return date.weekday >= DateTime.monday &&
+            date.weekday <= DateTime.friday;
     }
   }
 
@@ -223,89 +203,76 @@ class _HomePageState extends State<HomePage>{
     '2026-12-31',
   };
 
-  
-  bool isHoliday(DateTime date){
-    final key = 
-      '${date.year}-'
-      '${date.month.toString().padLeft(2,'0')}-'
-      '${date.day.toString().padLeft(2,'0')}';
+  bool isHoliday(DateTime date) {
+    final key =
+        '${date.year}-'
+        '${date.month.toString().padLeft(2, '0')}-'
+        '${date.day.toString().padLeft(2, '0')}';
     return holidays.contains(key);
   }
 
-
-  int getNightBrigade(DateTime date){
-    final statDate = DateTime(2026,1,1);
+  int getNightBrigade(DateTime date) {
+    final statDate = DateTime(2026, 1, 1);
     final days = DateTime(
       date.year,
       date.month,
       date.day,
     ).difference(statDate).inDays;
-    const brigades = [2,1,4,3];
+    const brigades = [2, 1, 4, 3];
 
     return brigades[days % 4];
   }
 
-  int getPreviousNightBrigade(DateTime date){
-    final previousDate = DateTime(
-      date.year,
-      date.month,
-      date.day-1,
-    );
+  int getNextNightBrigade(DateTime date) {
+    final previousDate = DateTime(date.year, date.month, date.day + 1);
     return getNightBrigade(previousDate);
   }
 
-  int getDayBrigade(DateTime date){
+  int getDayBrigade(DateTime date) {
     final nightBrigade = getNightBrigade(date);
-    return switch(nightBrigade){
-      2=>4,
-      1=>3,
-      4=>2,
-      3=>1,
-      _=>0,
+    return switch (nightBrigade) {
+      2 => 4,
+      1 => 3,
+      4 => 2,
+      3 => 1,
+      _ => 0,
     };
-
   }
 
-  void goToToday(){
+  void goToToday() {
     setState(() {
-      selectDate=DateTime.now();
+      selectDate = DateTime.now();
     });
   }
 
-  void previousDay(){
+  void previousDay() {
     setState(() {
-      selectDate = selectDate.subtract(
-        const Duration(days: 1),
-      );
+      selectDate = selectDate.subtract(const Duration(days: 1));
     });
   }
-  
-  void nextDay(){
+
+  void nextDay() {
     setState(() {
-      selectDate = selectDate.add(
-        const Duration(days: 1),
-      );
+      selectDate = selectDate.add(const Duration(days: 1));
     });
   }
 
   Future<void> selectedDate() async {
     final pickedDate = await showDatePicker(
       context: context,
-      initialDate: selectDate, 
-      firstDate: DateTime(2000,1,1), 
-      lastDate: DateTime(2035,04,24),
+      initialDate: selectDate,
+      firstDate: DateTime(2000, 1, 1),
+      lastDate: DateTime(2035, 04, 24),
       helpText: 'Выберите дату смены',
       cancelText: 'Отмена',
       confirmText: 'Выбрать',
     );
-    if (pickedDate!=null) {
+    if (pickedDate != null) {
       setState(() {
-        selectDate=pickedDate;
+        selectDate = pickedDate;
       });
     }
-
   }
-
 
   @override
   void initState() {
@@ -330,11 +297,9 @@ class _HomePageState extends State<HomePage>{
     });
     loadWorkers();
   }
-  
 
   @override
-  Widget build(BuildContext context){
-       
+  Widget build(BuildContext context) {
     final weekdays = [
       'Понедельник',
       'Вторник',
@@ -344,19 +309,17 @@ class _HomePageState extends State<HomePage>{
       'Суббота',
       'Воскресенье',
     ];
-    final weekdayText = weekdays[selectDate.weekday-1];
-         
-    final dateText = 
-      '$weekdayText, '
-      '${selectDate.day.toString().padLeft(2,'0')}.'
-      '${selectDate.month.toString().padLeft(2,'0')}.'
-      '${selectDate.year}';
+    final weekdayText = weekdays[selectDate.weekday - 1];
 
-    
-    final previousNight = getPreviousNightBrigade(selectDate);
+    final dateText =
+        '$weekdayText, '
+        '${selectDate.day.toString().padLeft(2, '0')}.'
+        '${selectDate.month.toString().padLeft(2, '0')}.'
+        '${selectDate.year}';
+
+    final previousNight = getNightBrigade(selectDate);
     final day = getDayBrigade(selectDate);
-    final nextNight = getNightBrigade(selectDate);
-  
+    final nextNight = getNextNightBrigade(selectDate);
 
     return Scaffold(
       appBar: AppBar(
@@ -368,11 +331,11 @@ class _HomePageState extends State<HomePage>{
               switch (value) {
                 case 'workers':
                   Navigator.push(
-                    context, 
+                    context,
                     MaterialPageRoute(
-                      builder: (context)=>AllWorkersPage(
+                      builder: (context) => AllWorkersPage(
                         workers: workers,
-                        onWorkersChanged:saveWorkers,
+                        onWorkersChanged: saveWorkers,
                       ),
                     ),
                   );
@@ -386,11 +349,11 @@ class _HomePageState extends State<HomePage>{
                   exportWorkers();
                   break;
                 case 'about':
-                  //Информация о программе 
+                  //Информация о программе
                   break;
               }
             },
-            itemBuilder: (context)=>[
+            itemBuilder: (context) => [
               const PopupMenuItem(
                 value: 'workers',
                 child: ListTile(
@@ -406,7 +369,7 @@ class _HomePageState extends State<HomePage>{
                 ),
               ),
               const PopupMenuItem(
-                value:'export',
+                value: 'export',
                 child: ListTile(
                   leading: Icon(Icons.save_alt),
                   title: Text('Эксорт работников'),
@@ -416,10 +379,10 @@ class _HomePageState extends State<HomePage>{
                 value: 'about',
                 child: ListTile(
                   leading: Icon(Icons.info_outline),
-                  title: Text('О программе'),   
+                  title: Text('О программе'),
                 ),
               ),
-            ]
+            ],
           ),
         ],
       ),
@@ -428,15 +391,17 @@ class _HomePageState extends State<HomePage>{
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            
             // ElevatedButton.icon(
             //   onPressed: importWorkers,
-            //   icon: const Icon(Icons.upload_file), 
+            //   icon: const Icon(Icons.upload_file),
             //   label: const Text('Импорт сотрудников'),
             // ),
 
-            const Text('Расписание смен', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
-            const SizedBox(height: 16,),
+            const Text(
+              'Расписание смен',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
@@ -458,23 +423,23 @@ class _HomePageState extends State<HomePage>{
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: isHoliday(selectDate)
-                              ?Colors.red
-                              :selectDate.weekday >= 6
-                                ?Colors.green
-                                :Colors.black,
+                                ? Colors.red
+                                : selectDate.weekday >= 6
+                                ? Colors.green
+                                : Colors.black,
                           ),
                         ),
                       ),
                     ),
                     IconButton(
-                      onPressed: nextDay, 
+                      onPressed: nextDay,
                       icon: const Icon(Icons.chevron_right),
-                    ),                    
+                    ),
                   ],
                 ),
               ),
             ),
-            if(isHoliday(selectDate))
+            if (isHoliday(selectDate))
               const Padding(
                 padding: EdgeInsets.only(top: 4),
                 child: Text(
@@ -489,23 +454,21 @@ class _HomePageState extends State<HomePage>{
             Align(
               alignment: Alignment.centerRight,
               child: TextButton.icon(
-                onPressed: goToToday, 
+                onPressed: goToToday,
                 icon: const Icon(Icons.today),
-                label: const Text('Сегодня')
+                label: const Text('Сегодня'),
               ),
             ),
-            const SizedBox(height: 12,),
+            const SizedBox(height: 12),
             //------------------------------
             Card(
               child: ListTile(
-                onTap: (){
+                onTap: () {
                   Navigator.push(
-                    context, 
+                    context,
                     MaterialPageRoute(
-                      builder: (context) => WorkersPage(
-                        brigade: previousNight, 
-                        workers: workers,
-                      ),
+                      builder: (context) =>
+                          WorkersPage(brigade: previousNight, workers: workers),
                     ),
                   );
                 },
@@ -514,10 +477,10 @@ class _HomePageState extends State<HomePage>{
                   '19:00 - 7:00 | Бригада №$previousNight'
                   ' - ${countWorkersInBrigade(previousNight)} работников',
                   style: const TextStyle(
-                    fontSize:18,
-                    fontWeight:FontWeight.bold,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
-                ),  
+                ),
                 leading: const Icon(
                   Icons.nightlight_round,
                   color: Colors.blue,
@@ -526,26 +489,24 @@ class _HomePageState extends State<HomePage>{
               ),
             ),
             //------------------------------
-            const SizedBox(height: 12,),
+            const SizedBox(height: 12),
 
             Card(
               child: ListTile(
-                onTap: (){
+                onTap: () {
                   Navigator.push(
-                    context, 
+                    context,
                     MaterialPageRoute(
-                      builder: (context) => WorkersPage(
-                        brigade: day, 
-                        workers: workers,
-                      ),
+                      builder: (context) =>
+                          WorkersPage(brigade: day, workers: workers),
                     ),
                   );
-                },  
+                },
                 title: const Text('Дневная смена'),
                 subtitle: Text(
                   '07:00 - 19:00 | Бригада № $day'
                   ' - ${countWorkersInBrigade(day)} работников',
-                   style: const TextStyle(
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -553,21 +514,19 @@ class _HomePageState extends State<HomePage>{
                 leading: const Icon(
                   Icons.wb_sunny,
                   color: Colors.amber,
-                  size:30,
+                  size: 30,
                 ),
               ),
             ),
 
             Card(
               child: ListTile(
-                onTap: (){
+                onTap: () {
                   Navigator.push(
-                    context, 
+                    context,
                     MaterialPageRoute(
-                      builder: (context) => WorkersPage(
-                        brigade: nextNight,
-                        workers: workers,
-                      ),
+                      builder: (context) =>
+                          WorkersPage(brigade: nextNight, workers: workers),
                     ),
                   );
                 },
@@ -583,49 +542,46 @@ class _HomePageState extends State<HomePage>{
                 leading: const Icon(
                   Icons.nightlight_round,
                   color: Colors.blue,
-                  size:30,
+                  size: 30,
                 ),
               ),
             ),
-            SizedBox(height: 20,),  
+            SizedBox(height: 20),
 
-
-            SizedBox(height: 20,),
+            SizedBox(height: 20),
             Card(
               child: ListTile(
-                onTap: (){
-                  final workingWorkers = workers.where((worker){
-                    return worker.brigade==5 && worker.working && isBrigade5Working(selectDate, worker.grafic7);
+                onTap: () {
+                  final workingWorkers = workers.where((worker) {
+                    return worker.brigade == 5 &&
+                        worker.working &&
+                        isBrigade5Working(selectDate, worker.grafic7);
                   }).toList();
 
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => WorkersPage(
-                        brigade: 5, 
-                        workers: workingWorkers,
-                      ),
+                      builder: (context) =>
+                          WorkersPage(brigade: 5, workers: workingWorkers),
                     ),
                   );
                 },
                 title: const Text('5-я Бригада'),
                 subtitle: Text(
                   'Работает: '
-                  '${workers.where((worker)=>(worker.brigade==5 && worker.working && isBrigade5Working(selectDate, worker.grafic7))).length} '
-                  'из ${countWorkersInBrigade(5)} работников', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold,)
+                  '${workers.where((worker) => (worker.brigade == 5 && worker.working && isBrigade5Working(selectDate, worker.grafic7))).length} '
+                  'из ${countWorkersInBrigade(5)} работников',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                leading: const Icon(
-                  Icons.group,
-                  color: Colors.green,
-                  size:30,
-                ),
+                leading: const Icon(Icons.group, color: Colors.green, size: 30),
               ),
             ),
           ],
-          
         ),
       ),
     );
   }
 }
-
