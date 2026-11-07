@@ -488,7 +488,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            //------------------------------
+            //------------------------------------------------------------------
             const SizedBox(height: 12),
 
             Card(
@@ -518,6 +518,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
+            const SizedBox(height: 20),
 
             Card(
               child: ListTile(
@@ -546,9 +547,9 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Card(
               child: ListTile(
                 onTap: () {
@@ -579,6 +580,7 @@ class _HomePageState extends State<HomePage> {
                 leading: const Icon(Icons.group, color: Colors.green, size: 30),
               ),
             ),
+            //------------------------------------------------------------------
           ],
         ),
       ),
