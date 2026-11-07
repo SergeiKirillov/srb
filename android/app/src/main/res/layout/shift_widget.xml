@@ -32,6 +32,16 @@
         android:text="Дневная смена: бригада № 4"
         android:textColor="#183153"
         android:textSize="14sp" />
+    
+    <TextView
+        android:id="@+id/widget_tomorrow_night"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Ночная смена завтра: бригада № 1"
+        android:textColor="#183153"
+        android:textSize="14sp"
+    />
 
     <TextView
         android:layout_width="match_parent"

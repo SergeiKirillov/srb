@@ -24,13 +24,11 @@ object ShiftSchedule {
     }
 
     fun currentBrigade(date:LocalDate, hour: Int): Int{
-        return if (hour  in 7..18){
-            dayBrigade(date)
-        } else if (hour >= 19) {
-            nightBrigade(date)
-        } else {
-            nightBrigade(date.minusDays(1))
-        }
+        return when(hour) {
+            in 7..18 ->dayBrigade(date)
+            in 19..23 -> nightBrigade(date.plusDays(1))
+            else -> nightBrigade(date)
+        } 
     }
 }
 

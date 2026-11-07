@@ -26,6 +26,7 @@ class ShiftWidgetProvider : AppWidgetProvider() {
 
         val nightBrigade = ShiftSchedule.nightBrigade(date)
         val dayBrigade = ShiftSchedule.dayBrigade(date)
+        val tomorrowNightBrigade = ShiftSchedule.nightBrigade(date.plusDays(1))
 
         for (appWidgetId in appWidgetIds) {
             val views = RemoteViews(
@@ -45,6 +46,10 @@ class ShiftWidgetProvider : AppWidgetProvider() {
                 R.id.widget_day,
                 "Дневная смена: бригада № $dayBrigade"
             )
+            views.setTextViewText(
+                R.id.widget_tomorrow_night,
+                "Ночная смена завтра: бригада № $tomorrowNightBrigade"
+            )   
 
 
             val currentBrigade = ShiftSchedule.currentBrigade(

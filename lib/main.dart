@@ -459,7 +459,7 @@ class _HomePageState extends State<HomePage> {
                 label: const Text('Сегодня'),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 5),
             //------------------------------
             Card(
               child: ListTile(
@@ -489,7 +489,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             //------------------------------------------------------------------
-            const SizedBox(height: 12),
+            const SizedBox(height: 5),
 
             Card(
               child: ListTile(
@@ -518,7 +518,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 5),
 
             Card(
               child: ListTile(
@@ -547,9 +547,8 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
 
-            const SizedBox(height: 20),
             Card(
               child: ListTile(
                 onTap: () {
