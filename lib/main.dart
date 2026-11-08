@@ -14,6 +14,8 @@ import 'all_workers_page.dart';
 
 import 'package:flutter/services.dart';
 
+import 'vcf_import_service.dart';
+
 const widgetChannel = MethodChannel('com.example.srb/widget');
 
 void main() {
@@ -88,6 +90,37 @@ class _HomePageState extends State<HomePage> {
 
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Ошибка импорта: $e')));
+    }
+  }
+
+  Future<void> importVcf() async {
+    try {
+      final selectedFile = await FilePicker.pickFile(
+        type: FileType.custom,
+        allowedExtensions: ['vcf'],
+      );
+      
+      if(selectedFile == null) return;
+
+      final content = await File(selectedFile.path!).readAsString();
+
+      final service = VcfImportService();
+      final contacts = service.readContacts(content);
+
+      if(!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Найдено контактов: ${contacts.length}'),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Ошибка импорта VCF: $e')),
+      );
     }
   }
 
@@ -344,6 +377,10 @@ class _HomePageState extends State<HomePage> {
                   //Здесь импорт работников.
                   importWorkers();
                   break;
+                case 'importVcf':
+                  //VCF
+                  importVcf();
+                  break;
                 case 'export':
                   //Здесь экспорт работников.
                   exportWorkers();
@@ -366,6 +403,13 @@ class _HomePageState extends State<HomePage> {
                 child: ListTile(
                   leading: Icon(Icons.file_open),
                   title: Text('Импорт работников'),
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'importVcf',
+                child: ListTile(
+                  leading: Icon(Icons.contact_page),
+                  title: Text('Импорт контактов VCF'),
                 ),
               ),
               const PopupMenuItem(

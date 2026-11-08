@@ -565,6 +565,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.6"
+  vcard_dart:
+    dependency: "direct main"
+    description:
+      name: vcard_dart
+      sha256: "4029df0b917c524ba6dbef9b6d79208038c86be5dd06d413978884559e39522b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.0"
   vector_math:
     dependency: transitive
     description:
