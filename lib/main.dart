@@ -105,7 +105,8 @@ class _HomePageState extends State<HomePage> {
       final content = await File(selectedFile.path!).readAsString();
 
       final service = VcfImportService();
-      final contacts = service.readContacts(content);
+      final normalizedContent = content.replaceAll(RegExp('\r?\n'), '');
+      final contacts = service.readContacts(normalizedContent);
 
       if(!mounted) return;
 
