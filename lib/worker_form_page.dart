@@ -9,6 +9,9 @@ import 'cl_city.dart';
 import 'city_storage.dart';
 import 'vcf_import_service.dart';
 
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+
 class WorkerFormPage extends StatefulWidget {
   final Worker? worker;
   final VcfContactData? initialData;
@@ -162,6 +165,48 @@ class _WorkerFormPageState extends State<WorkerFormPage> {
   int _brigade = 5;
   int _grafic7 = 0;
   bool _working = true;
+  List<VcfContactData> _vcfContacts = [];
+  int _vcfCurrentIndex = 0;
+
+  Future<void> _importVcf() async {
+     final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['vcf'],
+      );
+
+      if (result == null || result.files.single.path == null) {
+        return;
+      }
+
+      try {
+        final content = await File(result.files.single.path!).readAsString();
+        final normalizedContent = content.replaceAll(RegExp(r'=\r?\n'), '');
+        final service = VcfImportService();
+        final contacts = service.readContacts(normalizedContent);
+
+        if(!mounted) return;
+
+        if(contacts.isEmpty){
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Контакты в файле не найдены')),
+          );
+          return;
+        }
+        setState(() {
+          _vcfContacts = contacts;
+          _vcfCurrentIndex = 0;
+        });
+
+        _applyVcfContact(contacts.first);
+
+      } catch (error) {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка импорта VCF: $error')),
+        );
+      }
+  }
 
   @override
   void initState() {
@@ -492,7 +537,7 @@ class _WorkerFormPageState extends State<WorkerFormPage> {
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.phone,
-                inputFormatters: [MobilePhoneFormatter()],
+                //inputFormatters: [MobilePhoneFormatter()],
                 validator: _validateMobilePhone,
               ),
               const SizedBox(height: 12),
@@ -503,7 +548,7 @@ class _WorkerFormPageState extends State<WorkerFormPage> {
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.phone,
-                inputFormatters: [MobilePhoneFormatter()],
+                //inputFormatters: [MobilePhoneFormatter()],
                 validator: _validateMobilePhone,
               ),
               const SizedBox(height: 12),
@@ -514,7 +559,7 @@ class _WorkerFormPageState extends State<WorkerFormPage> {
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.phone,
-                inputFormatters: [MobilePhoneFormatter()],
+                //inputFormatters: [MobilePhoneFormatter()],
                 validator: _validateMobilePhone,
               ),
 
@@ -527,7 +572,7 @@ class _WorkerFormPageState extends State<WorkerFormPage> {
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.phone,
-                inputFormatters: [WorkPhoneFormatter()],
+                //inputFormatters: [WorkPhoneFormatter()],
                 validator: _validateWorkPhone,
               ),
               const SizedBox(height: 12),
@@ -538,7 +583,7 @@ class _WorkerFormPageState extends State<WorkerFormPage> {
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.phone,
-                inputFormatters: [WorkPhoneFormatter()],
+                //inputFormatters: [WorkPhoneFormatter()],
                 validator: _validateWorkPhone,
               ),
               const SizedBox(height: 12),
@@ -549,7 +594,7 @@ class _WorkerFormPageState extends State<WorkerFormPage> {
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.phone,
-                inputFormatters: [WorkPhoneFormatter()],
+                //inputFormatters: [WorkPhoneFormatter()],
                 validator: _validateWorkPhone,
               ),
 
