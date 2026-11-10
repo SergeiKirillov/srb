@@ -1,78 +1,93 @@
 import 'package:flutter/material.dart';
+import 'package:srb/vcf_import_service.dart';
+
 import 'cl_worker.dart';
+
 import 'package:flutter/services.dart';
+
 import 'cl_city.dart';
 import 'city_storage.dart';
+import 'vcf_import_service.dart';
 
-
-class WorkerFormPage extends StatefulWidget{
+class WorkerFormPage extends StatefulWidget {
   final Worker? worker;
+  final VcfContactData? initialData;
   final Future<void> Function(Worker) onSave;
-  
+
   const WorkerFormPage({
     super.key,
     this.worker,
+    this.initialData,
     required this.onSave,
   });
 
   @override
-  State<WorkerFormPage> createState()=>_WorkerFormPageState();
-
+  State<WorkerFormPage> createState() => _WorkerFormPageState();
 }
 
-class MobilePhoneFormatter extends TextInputFormatter{
+class MobilePhoneFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue,TextEditingValue newValue,){
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     final digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
 
-    if (digits.isEmpty){
+    if (digits.isEmpty) {
       return const TextEditingValue(
-        text:'',
+        text: '',
         selection: TextSelection.collapsed(offset: 0),
       );
     }
 
     final startsWithPlusSeven = newValue.text.startsWith('+7');
-    final hasLeadingSevenCountryCode = !startsWithPlusSeven &&  digits.startsWith('7')&&digits.length>10;
-
+    final hasLeadingSevenCountryCode =
+        !startsWithPlusSeven && digits.startsWith('7') && digits.length > 10;
 
     String nationalNumber;
-    
+
     if (startsWithPlusSeven || hasLeadingSevenCountryCode) {
       nationalNumber = digits.substring(1);
     } else {
       nationalNumber = digits;
-    } 
-
-    if(nationalNumber.length>10){
-      nationalNumber=nationalNumber.substring(0,10);
     }
 
-    final cursorOffset = newValue.selection.extentOffset.clamp(0, newValue.text.length).toInt();
-    
-    var digitsBeforeCursor = newValue.text.substring(0, cursorOffset).replaceAll(RegExp(r'[^0-9]'),'').length;
-
-    if (startsWithPlusSeven && cursorOffset >= 2 || hasLeadingSevenCountryCode && cursorOffset >= 1) {
-      digitsBeforeCursor --;
+    if (nationalNumber.length > 10) {
+      nationalNumber = nationalNumber.substring(0, 10);
     }
 
-    digitsBeforeCursor = digitsBeforeCursor.clamp(0, nationalNumber.length).toInt();
+    final cursorOffset = newValue.selection.extentOffset
+        .clamp(0, newValue.text.length)
+        .toInt();
+
+    var digitsBeforeCursor = newValue.text
+        .substring(0, cursorOffset)
+        .replaceAll(RegExp(r'[^0-9]'), '')
+        .length;
+
+    if (startsWithPlusSeven && cursorOffset >= 2 ||
+        hasLeadingSevenCountryCode && cursorOffset >= 1) {
+      digitsBeforeCursor--;
+    }
+
+    digitsBeforeCursor = digitsBeforeCursor
+        .clamp(0, nationalNumber.length)
+        .toInt();
 
     final buffer = StringBuffer('+7');
 
     var formattedCursorOffset = 2;
 
-
     for (var i = 0; i < nationalNumber.length; i++) {
-      if (i==0 || i==3 || i==6|| i==8) {
+      if (i == 0 || i == 3 || i == 6 || i == 8) {
         buffer.write(' ');
-        if (i<digitsBeforeCursor) {
+        if (i < digitsBeforeCursor) {
           formattedCursorOffset++;
         }
       }
       buffer.write(nationalNumber[i]);
 
-      if (i<digitsBeforeCursor) {
+      if (i < digitsBeforeCursor) {
         formattedCursorOffset++;
       }
     }
@@ -84,26 +99,27 @@ class MobilePhoneFormatter extends TextInputFormatter{
   }
 }
 
-class WorkPhoneFormatter extends TextInputFormatter{
+class WorkPhoneFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue){
-    final digitsBeforeCursor = newValue.text.substring(
-      0,newValue.selection.extentOffset.clamp(
-        0, 
-        newValue.text.length,
-      ))
-      .replaceAll(RegExp(r'\D'),'')
-      .length;
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digitsBeforeCursor = newValue.text
+        .substring(
+          0,
+          newValue.selection.extentOffset.clamp(0, newValue.text.length),
+        )
+        .replaceAll(RegExp(r'\D'), '')
+        .length;
 
     final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
-    final limitedDigits = digits.length > 6 
-      ? digits.substring(0,6) 
-      : digits;
+    final limitedDigits = digits.length > 6 ? digits.substring(0, 6) : digits;
 
     final buffer = StringBuffer();
 
     for (var i = 0; i < limitedDigits.length; i++) {
-      if(i == 2 || i == 4){
+      if (i == 2 || i == 4) {
         buffer.write(' ');
       }
       buffer.write(limitedDigits[i]);
@@ -112,10 +128,10 @@ class WorkPhoneFormatter extends TextInputFormatter{
     final formatted = buffer.toString();
 
     var cursorPosition = digitsBeforeCursor.clamp(0, limitedDigits.length);
-    if(cursorPosition>2) cursorPosition++;
-    if(cursorPosition>5) cursorPosition++;
+    if (cursorPosition > 2) cursorPosition++;
+    if (cursorPosition > 5) cursorPosition++;
 
-    cursorPosition=cursorPosition.clamp(0,formatted.length);
+    cursorPosition = cursorPosition.clamp(0, formatted.length);
 
     return TextEditingValue(
       text: formatted,
@@ -124,9 +140,9 @@ class WorkPhoneFormatter extends TextInputFormatter{
   }
 }
 
-class _WorkerFormPageState extends State<WorkerFormPage>{
-  final _formKey =GlobalKey<FormState>();
-  final _nameController =TextEditingController();
+class _WorkerFormPageState extends State<WorkerFormPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _shopController = TextEditingController();
   final _positionController = TextEditingController();
   final _streetController = TextEditingController();
@@ -142,15 +158,10 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
   final _phoneWork2Controller = TextEditingController();
   final _phoneWork3Controller = TextEditingController();
   final _phoneShopController = TextEditingController();
-  DateTime _birthday = DateTime(2000,1,1);
+  DateTime _birthday = DateTime(2000, 1, 1);
   int _brigade = 5;
   int _grafic7 = 0;
   bool _working = true;
-
-
-
-
-  
 
   @override
   void initState() {
@@ -158,6 +169,7 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
     _loadCities();
 
     final worker = widget.worker;
+    final initialData = widget.initialData;
 
     if (worker != null) {
       _nameController.text = worker.name;
@@ -166,48 +178,67 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
       _streetController.text = worker.street;
       _houseController.text = worker.house;
       _apartmentController.text = worker.apartment;
+
       _birthday = widget.worker!.birthday;
       _brigade = widget.worker!.brigade;
       _grafic7 = widget.worker!.grafic7;
       _working = widget.worker!.working;
+
       _phoneMobileWorkController.text = widget.worker!.phoneMobileWork;
-      _phoneMobilePersonal1Controller.text = widget.worker!.phoneMobilePersonal1;
-      _phoneMobilePersonal2Controller.text = widget.worker!.phoneMobilePersonal2;
+      _phoneMobilePersonal1Controller.text =
+          widget.worker!.phoneMobilePersonal1;
+      _phoneMobilePersonal2Controller.text =
+          widget.worker!.phoneMobilePersonal2;
+
       _phoneWork1Controller.text = widget.worker!.phoneWork1;
       _phoneWork2Controller.text = widget.worker!.phoneWork2;
       _phoneWork3Controller.text = widget.worker!.phoneWork3;
+
       _phoneShopController.text = widget.worker!.phoneShop;
-      
+    } else if (initialData != null) {
+      _nameController.text = initialData.name;
+      _shopController.text = initialData.shop;
+      _positionController.text = initialData.position;
+      _streetController.text = initialData.street;
 
+      _birthday = initialData.birthday;
 
+      _phoneMobileWorkController.text = initialData.phoneMobileWork;
+      _phoneMobilePersonal1Controller.text = initialData.phoneMobilePersonal1;
+      _phoneMobilePersonal2Controller.text = initialData.phoneMobilePersonal2;
 
+      _phoneWork1Controller.text = initialData.phoneWork1;
+      _phoneWork2Controller.text = initialData.phoneWork2;
+      _phoneWork3Controller.text = initialData.phoneWork3;
     }
   }
 
   Future<void> _loadCities() async {
     final cities = await _cityStorage.loadCities();
 
-    if(!mounted) return;
+    if (!mounted) return;
 
     setState(() {
       _cities = cities;
 
-      final worker = widget.worker;
-      final savedPostalCode = worker?.cityPostalCode ?? '101400';
+      //final worker = widget.worker;
+      final savedPostalCode =
+          widget.worker?.cityPostalCode ??
+          widget.initialData?.postalCode ??
+          '101400';
 
-      if (cities.any((city)=>city.postalCode == savedPostalCode)) {
+      if (cities.any((city) => city.postalCode == savedPostalCode)) {
         _cityPostalCode = savedPostalCode;
       } else if (cities.any((city) => city.postalCode == '101400')) {
         _cityPostalCode = '101400';
-      } else if (cities.isNotEmpty){
+      } else if (cities.isNotEmpty) {
         _cityPostalCode = cities.first.postalCode;
       }
-    },);
+    });
   }
 
-
   @override
-  void dispose(){
+  void dispose() {
     _nameController.dispose();
     _shopController.dispose();
     _positionController.dispose();
@@ -225,55 +256,52 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
     super.dispose();
   }
 
-  String? _validateMobilePhone(String? value){
+  String? _validateMobilePhone(String? value) {
     final phone = value?.trim() ?? "";
-    
+
     if (phone.isEmpty) return null;
 
     final digits = phone.replaceAll(' ', '');
 
-    if (!RegExp(r'^[+]7[0-9]{10}$').hasMatch(digits)){
+    if (!RegExp(r'^[+]7[0-9]{10}$').hasMatch(digits)) {
       return 'Формат: +7 XXX XXX XX XX';
     }
 
     return null;
   }
 
-  String? _validateWorkPhone(String? value){
+  String? _validateWorkPhone(String? value) {
     final phone = value?.trim() ?? "";
-    
+
     if (phone.isEmpty) return null;
 
     final digits = phone.replaceAll(' ', '');
 
-    if (!RegExp(r'^96[0-9]{4}$').hasMatch(digits)){
+    if (!RegExp(r'^96[0-9]{4}$').hasMatch(digits)) {
       return 'Формат: 96 XX XX';
     }
 
     return null;
   }
 
-  String? _validateShopPhone(String? value){
+  String? _validateShopPhone(String? value) {
     final phone = value?.trim() ?? "";
-    
+
     if (phone.isEmpty) return null;
 
-    if (!RegExp(r'^[0-9]{3}$').hasMatch(phone)){
+    if (!RegExp(r'^[0-9]{3}$').hasMatch(phone)) {
       return 'Формат: XXX';
     }
 
     return null;
   }
 
-
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.worker == null
-          ?'Новый работник'
-          :'Редактирование работника',
+          widget.worker == null ? 'Новый работник' : 'Редактирование работника',
         ),
       ),
       body: SafeArea(
@@ -288,14 +316,14 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                   labelText: 'ФИО',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value){
+                validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Введите ФИО';
                   }
                   return null;
                 },
               ),
-              const SizedBox(height: 16,),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _shopController,
                 decoration: const InputDecoration(
@@ -313,38 +341,37 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
               ),
 
               //-----------------------------------------------------------------------------
-              const SizedBox(height: 16,),
+              const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                initialValue: _cities.any(
-                  (city) => city.postalCode == _cityPostalCode,
-                )
-                  ? _cityPostalCode
-                  : null,
+                initialValue:
+                    _cities.any((city) => city.postalCode == _cityPostalCode)
+                    ? _cityPostalCode
+                    : null,
                 decoration: const InputDecoration(
                   labelText: 'Город',
-                  border:  OutlineInputBorder(),
+                  border: OutlineInputBorder(),
                 ),
-                items: _cities.map((city){
+                items: _cities.map((city) {
                   return DropdownMenuItem<String>(
                     value: city.postalCode,
                     child: Text('${city.name} (${city.postalCode})'),
                   );
-                }).toList(), 
-                validator: (value){
-                  if(value == null || value.isEmpty){
+                }).toList(),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
                     return 'Выберите город';
                   }
                   return null;
                 },
-                onChanged: (value){
+                onChanged: (value) {
                   if (value != null) {
                     setState(() {
-                      _cityPostalCode=value;
+                      _cityPostalCode = value;
                     });
                   }
                 },
               ),
-              const SizedBox(height: 16,),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _streetController,
                 decoration: const InputDecoration(
@@ -352,15 +379,15 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                   border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 16,),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _houseController,
                 decoration: const InputDecoration(
                   labelText: 'Дом (необязательно)',
                   border: OutlineInputBorder(),
-                ),                
+                ),
               ),
-              const SizedBox(height: 16,),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _apartmentController,
                 decoration: const InputDecoration(
@@ -368,22 +395,22 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                   border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 16,),
+              const SizedBox(height: 16),
               //----------------------------------------------------------------------
 
               ListTile(
                 title: const Text('Дата рождения'),
                 subtitle: Text(
-                  '${_birthday.day.toString().padLeft(2,'0')}.'
-                  '${_birthday.month.toString().padLeft(2,'0')}.'
-                  '${_birthday.year}'
+                  '${_birthday.day.toString().padLeft(2, '0')}.'
+                  '${_birthday.month.toString().padLeft(2, '0')}.'
+                  '${_birthday.year}',
                 ),
                 trailing: const Icon(Icons.calendar_month),
-                onTap: () async{
+                onTap: () async {
                   final selectedDate = await showDatePicker(
-                    context: context, 
+                    context: context,
                     initialDate: _birthday,
-                    firstDate: DateTime(1900), 
+                    firstDate: DateTime(1900),
                     lastDate: DateTime.now(),
                   );
                   if (selectedDate != null && mounted) {
@@ -393,7 +420,7 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                   }
                 },
               ),
-              
+
               DropdownButtonFormField(
                 initialValue: _brigade,
                 decoration: const InputDecoration(
@@ -401,22 +428,22 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                   border: OutlineInputBorder(),
                 ),
                 items: List.generate(5, (index) {
-                  final brigade =index+1;
+                  final brigade = index + 1;
                   return DropdownMenuItem<int>(
                     value: brigade,
                     child: Text('Бригада $brigade'),
                   );
-                }), 
+                }),
                 onChanged: (value) {
-                  if(value != null){
+                  if (value != null) {
                     setState(() {
-                      _brigade=value;
+                      _brigade = value;
                     });
                   }
-                }
+                },
               ),
 
-              if(_brigade == 5) ...[
+              if (_brigade == 5) ...[
                 const SizedBox(height: 16),
                 DropdownButtonFormField<int>(
                   initialValue: _grafic7,
@@ -430,30 +457,30 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                       child: Text('Понедельник-пятница'),
                     ),
                     DropdownMenuItem(
-                      value:1,
+                      value: 1,
                       child: Text('7-й график -- понедельник-суббота'),
                     ),
                     DropdownMenuItem(
-                      value:2,
+                      value: 2,
                       child: Text('7-й график -- воскреснье-пятница'),
                     ),
-                  ], 
+                  ],
                   onChanged: (value) {
-                    if (value!=null) {
+                    if (value != null) {
                       setState(() {
                         _grafic7 = value;
                       });
                     }
                   },
                 ),
-              ], 
+              ],
 
               SwitchListTile(
                 title: const Text('Работает'),
                 value: _working,
-                onChanged: (value){
+                onChanged: (value) {
                   setState(() {
-                    _working=value;
+                    _working = value;
                   });
                 },
               ),
@@ -465,11 +492,10 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.phone,
-                inputFormatters: [MobilePhoneFormatter(),],
+                inputFormatters: [MobilePhoneFormatter()],
                 validator: _validateMobilePhone,
-                
               ),
-              const SizedBox(height: 12,),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _phoneMobilePersonal1Controller,
                 decoration: const InputDecoration(
@@ -477,10 +503,10 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.phone,
-                inputFormatters: [MobilePhoneFormatter(),],
+                inputFormatters: [MobilePhoneFormatter()],
                 validator: _validateMobilePhone,
               ),
-              const SizedBox(height: 12,),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _phoneMobilePersonal2Controller,
                 decoration: const InputDecoration(
@@ -488,12 +514,12 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.phone,
-                inputFormatters: [MobilePhoneFormatter(),],
+                inputFormatters: [MobilePhoneFormatter()],
                 validator: _validateMobilePhone,
               ),
 
               //-------------------------------------------------------
-              const SizedBox(height: 12,),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _phoneWork1Controller,
                 decoration: const InputDecoration(
@@ -504,7 +530,7 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                 inputFormatters: [WorkPhoneFormatter()],
                 validator: _validateWorkPhone,
               ),
-              const SizedBox(height: 12,),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _phoneWork2Controller,
                 decoration: const InputDecoration(
@@ -515,7 +541,7 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                 inputFormatters: [WorkPhoneFormatter()],
                 validator: _validateWorkPhone,
               ),
-              const SizedBox(height: 12,),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _phoneWork3Controller,
                 decoration: const InputDecoration(
@@ -528,7 +554,7 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
               ),
 
               //------------------------------------------------------------------
-              const SizedBox(height: 12,),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _phoneShopController,
                 decoration: const InputDecoration(
@@ -538,50 +564,50 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                 keyboardType: TextInputType.phone,
                 validator: _validateShopPhone,
               ),
-              const SizedBox(height: 12,),
+              const SizedBox(height: 12),
 
-
-              
-              
-              
-              const SizedBox(height: 16,),
+              const SizedBox(height: 16),
 
               //------------------------------------------
-              const SizedBox(height: 24,),
+              const SizedBox(height: 24),
               FilledButton.icon(
                 onPressed: () async {
-                  if(_formKey.currentState!.validate()){
+                  if (_formKey.currentState!.validate()) {
                     // Сохранение.
                     final oldWorker = widget.worker;
 
-                    if(oldWorker==null){
+                    if (oldWorker == null) {
                       final newWorker = Worker(
-                        id: 'W${DateTime.now().microsecondsSinceEpoch}', 
-                        name: _nameController.text.trim(), 
-                        birthday: _birthday, 
-                        shop: _shopController.text.trim(), 
-                        position: _positionController.text.trim(), 
+                        id: 'W${DateTime.now().microsecondsSinceEpoch}',
+                        name: _nameController.text.trim(),
+                        birthday: _birthday,
+                        shop: _shopController.text.trim(),
+                        position: _positionController.text.trim(),
                         cityPostalCode: _cityPostalCode,
                         street: _streetController.text.trim(),
                         house: _houseController.text.trim(),
                         apartment: _apartmentController.text.trim(),
-                        brigade: _brigade, 
-                        grafic7: _brigade==5 ? _grafic7 : 0 ,
-                        working: _working, 
-                        phoneMobileWork: _phoneMobileWorkController.text.trim(), 
-                        phoneMobilePersonal1: _phoneMobilePersonal1Controller.text.trim(), 
-                        phoneMobilePersonal2: _phoneMobilePersonal2Controller.text.trim(), 
-                        phoneWork1: _phoneWork1Controller.text.trim(), 
-                        phoneWork2: _phoneWork2Controller.text.trim(), 
-                        phoneWork3: _phoneWork3Controller.text.trim(), 
+                        brigade: _brigade,
+                        grafic7: _brigade == 5 ? _grafic7 : 0,
+                        working: _working,
+                        phoneMobileWork: _phoneMobileWorkController.text.trim(),
+                        phoneMobilePersonal1: _phoneMobilePersonal1Controller
+                            .text
+                            .trim(),
+                        phoneMobilePersonal2: _phoneMobilePersonal2Controller
+                            .text
+                            .trim(),
+                        phoneWork1: _phoneWork1Controller.text.trim(),
+                        phoneWork2: _phoneWork2Controller.text.trim(),
+                        phoneWork3: _phoneWork3Controller.text.trim(),
                         phoneShop: _phoneShopController.text.trim(),
                       );
-                      
-                      final navigator=Navigator.of(context);
+
+                      final navigator = Navigator.of(context);
 
                       await widget.onSave(newWorker);
 
-                      if(!mounted) return; 
+                      if (!mounted) return;
 
                       //ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Добавление нового работника подключим далее'),),);
                       navigator.pop(newWorker);
@@ -590,27 +616,29 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                     }
 
                     final updatedWorker = Worker(
-                      id: oldWorker.id, 
-                      name: _nameController.text.trim(), 
-                      birthday: _birthday, 
-                      shop: _shopController.text.trim(), 
-                      position: _positionController.text.trim(), 
+                      id: oldWorker.id,
+                      name: _nameController.text.trim(),
+                      birthday: _birthday,
+                      shop: _shopController.text.trim(),
+                      position: _positionController.text.trim(),
                       cityPostalCode: _cityPostalCode,
                       street: _streetController.text.trim(),
                       house: _houseController.text.trim(),
                       apartment: _apartmentController.text.trim(),
-                      brigade: _brigade, 
-                      grafic7: _brigade==5?_grafic7:0,
-                      working: _working, 
-                      phoneMobileWork: _phoneMobileWorkController.text.trim(), 
-                      phoneMobilePersonal1: _phoneMobilePersonal1Controller.text.trim(), 
-                      phoneMobilePersonal2: _phoneMobilePersonal2Controller.text.trim(), 
-                      phoneWork1: _phoneWork1Controller.text.trim(), 
-                      phoneWork2: _phoneWork2Controller.text.trim(), 
-                      phoneWork3: _phoneWork3Controller.text.trim(), 
+                      brigade: _brigade,
+                      grafic7: _brigade == 5 ? _grafic7 : 0,
+                      working: _working,
+                      phoneMobileWork: _phoneMobileWorkController.text.trim(),
+                      phoneMobilePersonal1: _phoneMobilePersonal1Controller.text
+                          .trim(),
+                      phoneMobilePersonal2: _phoneMobilePersonal2Controller.text
+                          .trim(),
+                      phoneWork1: _phoneWork1Controller.text.trim(),
+                      phoneWork2: _phoneWork2Controller.text.trim(),
+                      phoneWork3: _phoneWork3Controller.text.trim(),
                       phoneShop: _phoneShopController.text.trim(),
                     );
-                    
+
                     final navigator = Navigator.of(context);
 
                     await widget.onSave(updatedWorker);
@@ -618,9 +646,8 @@ class _WorkerFormPageState extends State<WorkerFormPage>{
                     if (!mounted) return;
 
                     navigator.pop(updatedWorker);
-
-                  }               
-                }, 
+                  }
+                },
                 icon: const Icon(Icons.save),
                 label: const Text('Сохранить'),
               ),
