@@ -10,6 +10,7 @@ import 'city_storage.dart';
 import 'vcf_import_service.dart';
 
 import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 
 class WorkerFormPage extends StatefulWidget {
@@ -169,43 +170,74 @@ class _WorkerFormPageState extends State<WorkerFormPage> {
   int _vcfCurrentIndex = 0;
 
   Future<void> _importVcf() async {
-     final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['vcf'],
-      );
+    final file = await FilePicker.pickFile(
+      type: FileType.custom,
+      allowedExtensions: ['vcf'],
+    );
 
-      if (result == null || result.files.single.path == null) {
+    if (file == null || file.path == null) {
+      return;
+    }
+
+    try {
+      final content = await File(file.path!).readAsString();
+      final normalizedContent = content.replaceAll(RegExp(r'=\r?\n'), '');
+      final service = VcfImportService();
+      final contacts = service.readContacts(normalizedContent);
+
+      if (!mounted) return;
+
+      if (contacts.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Контакты в файле не найдены')),
+        );
         return;
       }
+      setState(() {
+        _vcfContacts = contacts;
+        _vcfCurrentIndex = 0;
+      });
 
-      try {
-        final content = await File(result.files.single.path!).readAsString();
-        final normalizedContent = content.replaceAll(RegExp(r'=\r?\n'), '');
-        final service = VcfImportService();
-        final contacts = service.readContacts(normalizedContent);
+      _applyVcfContact(contacts.first);
+    } catch (error) {
+      if (!mounted) return;
 
-        if(!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Ошибка импорта VCF: $error')));
+    }
+  }
 
-        if(contacts.isEmpty){
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Контакты в файле не найдены')),
-          );
-          return;
-        }
-        setState(() {
-          _vcfContacts = contacts;
-          _vcfCurrentIndex = 0;
-        });
+  void _applyVcfContact(VcfContactData contact) {
+    _nameController.text = contact.name;
+    _shopController.text = contact.shop;
+    _positionController.text = contact.position;
+    _streetController.text = contact.street;
 
-        _applyVcfContact(contacts.first);
+    _houseController.clear();
+    _apartmentController.clear();
+    _phoneShopController.clear();
 
-      } catch (error) {
-        if (!mounted) return;
+    _phoneMobileWorkController.text = contact.phoneMobileWork;
+    _phoneMobilePersonal1Controller.text = contact.phoneMobilePersonal1;
+    _phoneMobilePersonal2Controller.text = contact.phoneMobilePersonal2;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка импорта VCF: $error')),
-        );
+    _phoneWork1Controller.text = contact.phoneWork1;
+    _phoneWork2Controller.text = contact.phoneWork2;
+    _phoneWork3Controller.text = contact.phoneWork3;
+
+    final postalCode = contact.postalCode;
+
+    setState(() {
+      _birthday = contact.birthday;
+
+      if (_cities.any((city) => city.postalCode == postalCode)) {
+        _cityPostalCode = postalCode;
+      } else if (_cities.any((city) => city.postalCode == '101400')) {
+        _cityPostalCode = '101400';
+      } else if (_cities.isNotEmpty) {
+        _cityPostalCode = _cities.first.postalCode;
       }
+    });
   }
 
   @override
@@ -355,6 +387,14 @@ class _WorkerFormPageState extends State<WorkerFormPage> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              if (widget.worker == null) ...[
+                OutlinedButton.icon(
+                  onPressed: _importVcf,
+                  icon: const Icon(Icons.contact_page),
+                  label: const Text('Импорт из VCF'),
+                ),
+                const SizedBox(height: 16),
+              ],
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
