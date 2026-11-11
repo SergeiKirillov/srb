@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 
 import 'cl_city.dart';
 import 'city_storage.dart';
-import 'vcf_import_service.dart';
 
 import 'dart:io';
 
@@ -688,15 +687,23 @@ class _WorkerFormPageState extends State<WorkerFormPage> {
                         phoneShop: _phoneShopController.text.trim(),
                       );
 
-                      final navigator = Navigator.of(context);
+                      //final navigator = Navigator.of(context);
 
                       await widget.onSave(newWorker);
 
                       if (!mounted) return;
 
                       //ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Добавление нового работника подключим далее'),),);
-                      navigator.pop(newWorker);
+                      //navigator.pop(newWorker);
+                      if (_vcfCurrentIndex + 1 < _vcfContacts.length) {
+                        setState(() {
+                          _vcfCurrentIndex++;
+                        });
+                        _applyVcfContact(_vcfContacts[_vcfCurrentIndex]);
+                        return;
+                      }
 
+                      Navigator.of(context).pop(newWorker);
                       return;
                     }
 
