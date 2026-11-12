@@ -148,9 +148,9 @@ class VcfImportService {
       'phoneMobileWork':mobileWork,
       'phoneMobilePersonal1':mobilePersonal1,
       'phoneMobilePersonal2':mobilePersonal2,
-      'phoneWork1':workPhones.isNotEmpty ? workPhones[0]:'',
-      'phoneWork2':workPhones.isNotEmpty ? workPhones[1]:'',
-      'phoneWork3':workPhones.isNotEmpty ? workPhones[2]:'',
+      'phoneWork1':workPhones.isNotEmpty ? workPhones.first : '',
+      'phoneWork2':workPhones.length >= 2 ? workPhones[1]:'',
+      'phoneWork3':workPhones.length >= 3 ? workPhones[2]:'',
     };
   }
 
