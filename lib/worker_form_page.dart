@@ -703,7 +703,7 @@ class _WorkerFormPageState extends State<WorkerFormPage> {
                         return;
                       }
 
-                      Navigator.of(context).pop(newWorker);
+                      Navigator.of(this.context).pop(newWorker);
                       return;
                     }
 
@@ -731,13 +731,11 @@ class _WorkerFormPageState extends State<WorkerFormPage> {
                       phoneShop: _phoneShopController.text.trim(),
                     );
 
-                    final navigator = Navigator.of(context);
-
                     await widget.onSave(updatedWorker);
 
                     if (!mounted) return;
 
-                    navigator.pop(updatedWorker);
+                    Navigator.of(this.context).pop(updatedWorker);
                   }
                 },
                 icon: const Icon(Icons.save),
