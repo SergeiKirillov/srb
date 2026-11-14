@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:srb/worker_detail_page.dart';
+
 import 'cl_worker.dart';
 import 'worker_form_page.dart';
 
-class AllWorkersPage extends StatefulWidget{
+class AllWorkersPage extends StatefulWidget {
   final List<Worker> workers;
   final Future<void> Function(List<Worker>) onWorkersChanged;
-
 
   const AllWorkersPage({
     super.key,
@@ -14,8 +14,8 @@ class AllWorkersPage extends StatefulWidget{
     required this.onWorkersChanged,
   });
 
-  @override 
-  State<AllWorkersPage> createState()=> _AllWorkersPageState();
+  @override
+  State<AllWorkersPage> createState() => _AllWorkersPageState();
 }
 
 class _AllWorkersPageState extends State<AllWorkersPage> {
@@ -23,28 +23,24 @@ class _AllWorkersPageState extends State<AllWorkersPage> {
 
   late List<Worker> currentWorkers;
   @override
-  void initState(){
+  void initState() {
     super.initState();
     currentWorkers = List<Worker>.from(widget.workers);
   }
 
-
-
   @override
-  Widget build(BuildContext context){
-    final filteredWorkers = currentWorkers.where((worker) {
-      return worker.name
-          .toLowerCase()
-          .contains(searchText.trim().toLowerCase());
-    }).toList()
-      ..sort(
-        (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-      );
-    
+  Widget build(BuildContext context) {
+    final filteredWorkers =
+        currentWorkers.where((worker) {
+          return worker.name.toLowerCase().contains(
+            searchText.trim().toLowerCase(),
+          );
+        }).toList()..sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Все работники'),
-      ),
+      appBar: AppBar(title: const Text('Все работники')),
       body: Column(
         children: [
           Padding(
@@ -55,52 +51,67 @@ class _AllWorkersPageState extends State<AllWorkersPage> {
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(),
               ),
-              onChanged: (value){
+              onChanged: (value) {
                 setState(() {
-                  searchText=value;
+                  searchText = value;
                 });
               },
             ),
           ),
           Expanded(
             child: filteredWorkers.isEmpty
-              ?const Center(child: Text('Работники не найдены'),)
-              :ListView.builder(
-                itemCount: filteredWorkers.length,
-                itemBuilder: (context, index){
-                  final worker = filteredWorkers[index];
+                ? const Center(child: Text('Работники не найдены'))
+                : ListView.builder(
+                    itemCount: filteredWorkers.length,
+                    itemBuilder: (context, index) {
+                      final worker = filteredWorkers[index];
 
-                  return ListTile(
-                    title: Text(worker.name),
-                    subtitle: Text(
-                      'Цех: ${worker.shop} · Бригада: ${worker.brigade}',
-                    ),
-                    onTap: () async {
-                      // Открытие формы 
-                      final updatedWorker =await Navigator.push<Worker>(
-                        context, 
-                        MaterialPageRoute(
-                          builder: (context)=>WorkerDetailPage(worker: worker),
+                      return ListTile(
+                        title: Text(worker.name),
+                        subtitle: Text(
+                          'Цех: ${worker.shop} · Бригада: ${worker.brigade}',
                         ),
+                        onTap: () async {
+                          // Открытие формы
+                          final result =
+                              await Navigator.push<WorkerDetailResult>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      WorkerDetailPage(worker: worker),
+                                ),
+                              );
+                          if (result == null || !mounted) return;
+
+                          List<Worker> updatedWorkers;
+
+                          if (result.action == WorkerDetailAction.deleted) {
+                            updatedWorkers = currentWorkers
+                                .where((item) => item.id != worker.id)
+                                .toList();
+                          } else if (result.action ==
+                                  WorkerDetailAction.updated &&
+                              result.worker != null) {
+                            updatedWorkers = currentWorkers.map((item) {
+                              return item.id == result.worker!.id
+                                  ? result.worker!
+                                  : item;
+                            }).toList();
+                          } else {
+                            return;
+                          }
+
+                          await widget.onWorkersChanged(updatedWorkers);
+
+                          if (!mounted) return;
+
+                          setState(() {
+                            currentWorkers = updatedWorkers;
+                          });
+                        },
                       );
-                      if(updatedWorker==null || !mounted) return;
-
-                      final updatedWorkers = currentWorkers.map((item){
-                        return item.id == updatedWorker.id ? updatedWorker:item;
-                      }).toList();
-
-                      await widget.onWorkersChanged(updatedWorkers);
-
-                      if (!mounted) return;
-
-                      setState(() {
-                        currentWorkers=updatedWorkers;
-                      });
-
                     },
-                  );
-                },
-              ),
+                  ),
           ),
         ],
       ),
@@ -108,25 +119,19 @@ class _AllWorkersPageState extends State<AllWorkersPage> {
         onPressed: () async {
           // Открытие формы добавления.
           final newWorker = await Navigator.push<Worker>(
-            context, 
+            context,
             MaterialPageRoute(
               builder: (context) => WorkerFormPage(
                 onSave: (newWorker) async {
-                  final updatedWorkers = [ 
-                    ...currentWorkers,
-                    newWorker,
-                  ];
+                  final updatedWorkers = [...currentWorkers, newWorker];
                   await widget.onWorkersChanged(updatedWorkers);
                 },
               ),
             ),
           );
-          if(!mounted || newWorker == null) return;
+          if (!mounted || newWorker == null) return;
           setState(() {
-            currentWorkers = [
-              ...currentWorkers,
-              newWorker,
-            ];
+            currentWorkers = [...currentWorkers, newWorker];
           });
         },
         icon: const Icon(Icons.add),

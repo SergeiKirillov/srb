@@ -68,7 +68,49 @@ class WorkerDetailPage extends StatelessWidget {
                 ),
               );
               if (!context.mounted || updatedWorker == null) return;
-              Navigator.pop(context, updatedWorker);
+              //Navigator.pop(context, updatedWorker);
+              Navigator.pop(
+                context,
+                WorkerDetailResult(
+                  action: WorkerDetailAction.updated,
+                  worker: updatedWorker,
+                ),
+              );
+            },
+          ),
+          //2 -button - Удаление работника
+          IconButton(
+            tooltip: 'Удаление работника',
+            icon: const Icon(Icons.delete),
+            onPressed: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (dialogContext) => AlertDialog(
+                  title: const Text('Удаление работника'),
+                  content: Text('Удалить работника ${worker.name}?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(dialogContext, false);
+                      },
+                      child: const Text('Отмена'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(dialogContext, true);
+                      },
+                      child: const Text('Удалить'),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirmed != true || !context.mounted) return;
+
+              Navigator.pop(
+                context,
+                const WorkerDetailResult(action: WorkerDetailAction.deleted),
+              );
             },
           ),
         ],
