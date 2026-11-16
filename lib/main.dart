@@ -1,20 +1,27 @@
-import 'package:flutter/material.dart';
+// Стандартные библиотеки Dart
+import 'dart:async';
+import 'dart:convert';
+import 'dart:async';
+import 'dart:io';
 
+// Пакеты Flutter
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+
+// Файлы проекта
+import 'workers_page.dart';
+import 'all_workers_page.dart';
+import 'worker_detail_page.dart';
+import 'vcf_import_service.dart';
 import 'cl_worker.dart';
 import 'worker_storage.dart';
 
-import 'dart:convert';
-import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
 
-import 'workers_page.dart';
-import 'all_workers_page.dart';
-//import 'worker_detail_page.dart';
 
-import 'package:flutter/services.dart';
 
-import 'vcf_import_service.dart';
 
 const widgetChannel = MethodChannel('com.example.srb/widget');
 
@@ -91,6 +98,33 @@ class _HomePageState extends State<HomePage> {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Ошибка импорта: $e')));
     }
+  }
+
+  
+  String normalizeName(String value){
+    return value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+  }
+
+  String normalizePhone(String value){
+    return value.replaceAll(RegExp(r'\D'),'');
+  }
+
+  bool isDuplicateContact(VcfContactData contact){
+    final contactName = normalizeName(contact.name);
+    final contactPhone = normalizePhone(contact.phoneMobilePersonal1);
+
+    if (contactName.isEmpty) return false;
+
+    return workers.any((worker) {
+      if (normalizeName(worker.name)!= contactName){
+        return false;
+      }
+      if (contactPhone.isEmpty){
+        return true;
+      }
+      return normalizePhone(worker.phoneMobilePersonal1)==contactPhone;
+
+    });
   }
 
   Future<void> importVcf() async {
