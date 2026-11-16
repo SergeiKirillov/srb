@@ -61,6 +61,7 @@ class _HomePageState extends State<HomePage> {
   List<Worker> workers = [];
   bool isLoadingWorkers = true;
   String? workersError;
+  StreamSubscription<List<SharedMediaFile>>? _intentSub;
 
   Future<void> importWorkers() async {
     try {
@@ -364,6 +365,29 @@ class _HomePageState extends State<HomePage> {
       }
     });
     loadWorkers();
+
+    _intentSub = ReceiveSharingIntent.instance
+      .getMediaStream()
+      .listen((files){
+        for (final file in files) {
+          debugPrint('Получен файл: ${file.path}');
+        }
+      }, onError: (error){
+        debugPrint('Ошибка получения файла: $error');
+      });
+
+      ReceiveSharingIntent.instance.getInitialMedia().then((files) {
+        for (final file in files){
+          debugPrint('Получен начальный файл: ${file.path}');
+        }
+        ReceiveSharingIntent.instance.reset();
+      });
+  }
+
+  @override
+  void dispose() {
+    _intentSub?.cancel();
+    super.dispose();
   }
 
   @override
