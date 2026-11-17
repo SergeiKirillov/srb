@@ -1,7 +1,6 @@
 // Стандартные библиотеки Dart
 import 'dart:async';
 import 'dart:convert';
-import 'dart:async';
 import 'dart:io';
 
 // Пакеты Flutter
@@ -11,17 +10,12 @@ import 'package:flutter/services.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 // Файлы проекта
-import 'workers_page.dart';
 import 'all_workers_page.dart';
-import 'worker_detail_page.dart';
 import 'vcf_import_service.dart';
 import 'cl_worker.dart';
+import 'workers_page.dart';
 import 'worker_storage.dart';
-
-
-
-
-
+import 'worker_form_page.dart';
 
 const widgetChannel = MethodChannel('com.example.srb/widget');
 
@@ -101,30 +95,28 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  
-  String normalizeName(String value){
+  String normalizeName(String value) {
     return value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
   }
 
-  String normalizePhone(String value){
-    return value.replaceAll(RegExp(r'\D'),'');
+  String normalizePhone(String value) {
+    return value.replaceAll(RegExp(r'\D'), '');
   }
 
-  bool isDuplicateContact(VcfContactData contact){
+  bool isDuplicateContact(VcfContactData contact) {
     final contactName = normalizeName(contact.name);
     final contactPhone = normalizePhone(contact.phoneMobilePersonal1);
 
     if (contactName.isEmpty) return false;
 
     return workers.any((worker) {
-      if (normalizeName(worker.name)!= contactName){
+      if (normalizeName(worker.name) != contactName) {
         return false;
       }
-      if (contactPhone.isEmpty){
+      if (contactPhone.isEmpty) {
         return true;
       }
-      return normalizePhone(worker.phoneMobilePersonal1)==contactPhone;
-
+      return normalizePhone(worker.phoneMobilePersonal1) == contactPhone;
     });
   }
 
@@ -134,8 +126,8 @@ class _HomePageState extends State<HomePage> {
         type: FileType.custom,
         allowedExtensions: ['vcf'],
       );
-      
-      if(selectedFile == null) return;
+
+      if (selectedFile == null) return;
 
       final content = await File(selectedFile.path!).readAsString();
 
@@ -143,20 +135,38 @@ class _HomePageState extends State<HomePage> {
       final normalizedContent = content.replaceAll(RegExp('\r?\n'), '');
       final contacts = service.readContacts(normalizedContent);
 
-      if(!mounted) return;
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Найдено контактов: ${contacts.length}'),
-        ),
+        SnackBar(content: Text('Найдено контактов: ${contacts.length}')),
       );
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Ошибка импорта VCF: $e')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Ошибка импорта VCF: $e')));
+    }
+  }
+
+  Future<void> handleSharedFiles(List<SharedMediaFile> files) async {
+    final service = VcfImportService();
+
+    for (final file in files) {
+      try {
+        final content = await File(file.path).readAsString();
+        final contacts = service.readContacts(content);
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Получено контактов: ${contacts.length}')),
+        );
+      } catch (e) {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Ошибка чтения VCF: $e')));
+      }
     }
   }
 
@@ -366,22 +376,25 @@ class _HomePageState extends State<HomePage> {
     });
     loadWorkers();
 
-    _intentSub = ReceiveSharingIntent.instance
-      .getMediaStream()
-      .listen((files){
-        for (final file in files) {
-          debugPrint('Получен файл: ${file.path}');
-        }
-      }, onError: (error){
+    _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen(
+      (files) {
+        //        for (final file in files) {
+        //          debugPrint('Получен файл: ${file.path}');
+        //        }
+        handleSharedFiles(files);
+      },
+      onError: (error) {
         debugPrint('Ошибка получения файла: $error');
-      });
+      },
+    );
 
-      ReceiveSharingIntent.instance.getInitialMedia().then((files) {
-        for (final file in files){
-          debugPrint('Получен начальный файл: ${file.path}');
-        }
-        ReceiveSharingIntent.instance.reset();
-      });
+    ReceiveSharingIntent.instance.getInitialMedia().then((files) {
+      //      for (final file in files) {
+      //        debugPrint('Получен начальный файл: ${file.path}');
+      //      }
+      handleSharedFiles(files);
+      ReceiveSharingIntent.instance.reset();
+    });
   }
 
   @override
