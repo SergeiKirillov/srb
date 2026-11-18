@@ -22,3 +22,14 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+
+subprojects {
+    if (name == "receive_sharing_intent") {
+        afterEvaluate {
+            tasks.withType<org.gradle.api.tasks.compile.JavaCompile>().configureEach {
+                sourceCompatibility = "17"
+                targetCompatibility = "17"
+            }
+        }
+    }
+}
