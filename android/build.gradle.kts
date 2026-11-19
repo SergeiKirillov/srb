@@ -26,9 +26,11 @@ tasks.register<Delete>("clean") {
 subprojects {
     if (name == "receive_sharing_intent") {
         afterEvaluate {
-            tasks.withType<org.gradle.api.tasks.compile.JavaCompile>().configureEach {
-                sourceCompatibility = "17"
-                targetCompatibility = "17"
+            extensions.configure<com.android.build.gradle.LibraryExtension>("android") {
+                compileOptions {
+                    sourceCompatibility = JavaVersion.VERSION_17
+                    targetCompatibility = JavaVersion.VERSION_17
+                }
             }
         }
     }
