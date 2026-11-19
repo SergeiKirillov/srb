@@ -15,7 +15,6 @@ import 'vcf_import_service.dart';
 import 'cl_worker.dart';
 import 'workers_page.dart';
 import 'worker_storage.dart';
-import 'worker_form_page.dart';
 
 const widgetChannel = MethodChannel('com.example.srb/widget');
 
