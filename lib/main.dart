@@ -159,7 +159,23 @@ class _HomePageState extends State<HomePage> {
         if (!mounted) return;
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Получено контактов: ${contacts.length}')),
+          SnackBar(
+            content: Text(
+              contacts
+                  .map((contact) {
+                    //return '${contact.name}: ${contact.phoneMobilePersonal1}';
+                    return '''
+                      Имя: ${contact.name}
+                      Личный 1: ${contact.phoneMobilePersonal1}
+                      Личный 2: ${contact.phoneMobilePersonal2}
+                      Рабочий мобильный: ${contact.phoneMobileWork}
+                        Рабочий 1: ${contact.phoneWork1}
+                    ''';
+                  })
+                  .join('\n'),
+            ),
+            duration: const Duration(seconds: 5),
+          ),
         );
       } catch (e) {
         if (!mounted) return;
