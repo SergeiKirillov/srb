@@ -16,6 +16,8 @@ import 'cl_worker.dart';
 import 'workers_page.dart';
 import 'worker_storage.dart';
 
+import 'package:flutter/foundation.dart';
+
 const widgetChannel = MethodChannel('com.example.srb/widget');
 
 void main() {
@@ -391,25 +393,28 @@ class _HomePageState extends State<HomePage> {
     });
     loadWorkers();
 
-    _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen(
-      (files) {
-        //        for (final file in files) {
-        //          debugPrint('Получен файл: ${file.path}');
-        //        }
-        handleSharedFiles(files);
-      },
-      onError: (error) {
-        debugPrint('Ошибка получения файла: $error');
-      },
-    );
+    if (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS) {
+      _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen(
+        (files) {
+          //        for (final file in files) {
+          //          debugPrint('Получен файл: ${file.path}');
+          //        }
+          handleSharedFiles(files);
+        },
+        onError: (error) {
+          debugPrint('Ошибка получения файла: $error');
+        },
+      );
 
-    ReceiveSharingIntent.instance.getInitialMedia().then((files) {
-      //      for (final file in files) {
-      //        debugPrint('Получен начальный файл: ${file.path}');
-      //      }
-      handleSharedFiles(files);
-      ReceiveSharingIntent.instance.reset();
-    });
+      ReceiveSharingIntent.instance.getInitialMedia().then((files) {
+        //      for (final file in files) {
+        //        debugPrint('Получен начальный файл: ${file.path}');
+        //      }
+        handleSharedFiles(files);
+        ReceiveSharingIntent.instance.reset();
+      });
+    }
   }
 
   @override
