@@ -42,24 +42,26 @@ class VcfImportService {
 
     final formattedName = card.formattedName.trim();
 
-    if (formattedName.isNotEmpty){
+    final structuredName = card.name;
+
+    if (structuredName == null) {
       return formattedName;
     }
 
-    final name = card.name;
-
-    if(name ==null) {
-      return '';
-    }
-
-    return [
-      name.family, 
-      name.given,
-      name.additional,
+    final nameFromN = [
+      structuredName.family, 
+      structuredName.given,
+      structuredName.additional,
     ]
     .where((part) => part is String && part.trim().isNotEmpty)
     .map((part)=>part.toString().trim())
     .join(' ');
+
+
+    return nameFromN.length > formattedName.length
+      ? nameFromN
+      : formattedName;
+
   }
 
   DateTime readBirthday(VCard card){
