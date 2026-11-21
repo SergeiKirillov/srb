@@ -58,11 +58,11 @@ class VcfImportService {
       return formattedName;
     }
 
-    final nameFromN =
-        [structuredName.family, structuredName.given, structuredName.additional]
-            .where((part) => part is String && part.trim().isNotEmpty)
-            .map((part) => part.toString().trim())
-            .join(' ');
+    // final nameFromN =
+    //     [structuredName.family, structuredName.given, structuredName.additional]
+    //         .where((part) => part is String && part.trim().isNotEmpty)
+    //         .map((part) => part.toString().trim())
+    //         .join(' ');
 
     return formattedName;
   }
@@ -160,8 +160,8 @@ class VcfImportService {
     return VcfContactData(
       name: readName(card),
 
-      //birthday: readBirthday(card),
-      birthday: DateTime.now(),
+      birthday: readBirthday(card),
+      
 
       shop: readShop(card),
       position: readPosition(card),

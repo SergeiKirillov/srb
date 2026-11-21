@@ -224,6 +224,7 @@ class _HomePageState extends State<HomePage> {
                     //return '${contact.name}: ${contact.phoneMobilePersonal1}';
                     return '''
                       Имя: ${contact.name}
+                      Дата рождения: ${contact.birthday}
                       Личный 1: ${contact.phoneMobilePersonal1}
                       Личный 2: ${contact.phoneMobilePersonal2}
                       Рабочий мобильный: ${contact.phoneMobileWork}
