@@ -149,13 +149,70 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  //Метод который убирает из строки 'Перенос Quoted-Printable' и объединяет строки в одну строку
+  List<String> unfoldVCardLines(String content) {
+    final physicalLines = content.split(RegExp(r'\r\n|\n|\r'));
+
+    final logicalLines = <String>[];
+    var currentLine = '';
+
+    for (final line in physicalLines) {
+      if (currentLine.isEmpty) {
+        currentLine = line;
+        continue;
+      }
+
+      //Перенос Quoted-Printable
+      if (currentLine.endsWith('=')) {
+        currentLine = currentLine.substring(0, currentLine.length - 1) + line;
+        continue;
+      }
+
+      //Обычный перенос VCard
+      if (line.startsWith(' ') || line.startsWith('\t')) {
+        currentLine += line.substring(1);
+        continue;
+      }
+
+      logicalLines.add(currentLine);
+      currentLine = line;
+    }
+
+    if (currentLine.isNotEmpty) {
+      logicalLines.add(currentLine);
+    }
+
+    return logicalLines;
+  }
+
+  //Функция получает значение файла и преобразует его в заданный
   Future<void> handleSharedFiles(List<SharedMediaFile> files) async {
     final service = VcfImportService();
 
     for (final file in files) {
       try {
         final content = await File(file.path).readAsString();
-        final contacts = service.readContacts(content);
+
+        // Объединяем физические строки VCF.
+        final logicalLines = unfoldVCardLines(content);
+
+        //final lines = content.split(RegExp(r'\r?\n'));
+
+        for (var i = 0; i < logicalLines.length; i++) {
+          final line = logicalLines[i];
+
+          if (line.trim().isEmpty) {
+            continue;
+          }
+
+          if (!line.contains(':')) {
+            debugPrint('Некорректная строка ${i + 1}: "$line"');
+          }
+        }
+
+        // Передаём объединённый текст парсеру.
+        final normalizedContent = logicalLines.join('\r\n');
+        final contacts = service.readContacts(normalizedContent);
 
         if (!mounted) return;
 
