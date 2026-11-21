@@ -41,6 +41,13 @@ class VcfImportService {
 
   String readName(VCard card) {
     final formattedName = card.formattedName.trim();
+
+    //Назначение подполей N (Structured Name):
+    //Family Name	        Фамилия
+    //Given Name	        Имя
+    // Additional Names	  Дополнительные имена
+    //Honorific Prefixes	Префикс (г-н, д-р)
+    //Honorific Suffixes	Суффикс (кандидат наук, PhD)
     final structuredName = card.name;
 
     debugPrint('FN: "$formattedName"');
@@ -57,7 +64,7 @@ class VcfImportService {
             .map((part) => part.toString().trim())
             .join(' ');
 
-    return nameFromN.length > formattedName.length ? nameFromN : formattedName;
+    return formattedName;
   }
 
   DateTime readBirthday(VCard card) {
