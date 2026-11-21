@@ -90,10 +90,12 @@ class VcfImportService {
     }
   }
 
+  //Обработка имени организации
   String readShop(VCard card) {
     return card.organization?.name.trim() ?? '';
   }
 
+  //Должность или функциональная обязанность
   String readPosition(VCard card) {
     return card.title?.trim() ?? '';
   }
@@ -166,10 +168,9 @@ class VcfImportService {
     return VcfContactData(
       name: readName(card),
       birthday: readBirthday(card),
-
       shop: readShop(card),
-      
       position: readPosition(card),
+      
       postalCode: readPostalCode(card),
       street: readStreet(card),
       phoneMobileWork: phones['phoneMobileWork']!,
