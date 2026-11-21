@@ -50,8 +50,8 @@ class VcfImportService {
     //Honorific Suffixes	Суффикс (кандидат наук, PhD)
     final structuredName = card.name;
 
-    debugPrint('FN: "$formattedName"');
-    debugPrint('N: "$structuredName"');
+    //debugPrint('FN: "$formattedName"');
+    //debugPrint('N: "$structuredName"');
     // debugPrint('FN length: ${formattedName.length}');
 
     if (structuredName == null) {
@@ -67,20 +67,26 @@ class VcfImportService {
     return formattedName;
   }
 
+  //Обработка дня рождения
+  //отсутствует всё - текущая дата
+  //отсутствует год - подстановка текущего года
+  //есть день, месяц, год - форматирование в Datetime.
   DateTime readBirthday(VCard card) {
     final birthday = card.birthday;
+    final DateTime now = DateTime.now();
 
     if (birthday == null ||
-        birthday.year == null ||
-        birthday.month == null ||
-        birthday.day == null) {
-      return DateTime.now();
+        birthday.day == null ||
+        birthday.month == null) {
+      return DateTime(now.year, now.month, now.day);
+    } else if (birthday.year == null) {
+      return DateTime(now.year, birthday.month!, birthday.day!);
     }
 
     try {
       return DateTime(birthday.year!, birthday.month!, birthday.day!);
     } catch (_) {
-      return DateTime.now();
+      return DateTime(now.year, now.month, now.day);
     }
   }
 
