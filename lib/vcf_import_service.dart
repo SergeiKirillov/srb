@@ -165,11 +165,10 @@ class VcfImportService {
 
     return VcfContactData(
       name: readName(card),
-
       birthday: readBirthday(card),
-      
 
       shop: readShop(card),
+      
       position: readPosition(card),
       postalCode: readPostalCode(card),
       street: readStreet(card),
