@@ -170,8 +170,9 @@ class VcfImportService {
       birthday: readBirthday(card),
       shop: readShop(card),
       position: readPosition(card),
-      
+
       postalCode: readPostalCode(card),
+      
       street: readStreet(card),
       phoneMobileWork: phones['phoneMobileWork']!,
       phoneMobilePersonal1: phones['phoneMobilePersonal1']!,
