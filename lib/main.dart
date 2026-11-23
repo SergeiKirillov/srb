@@ -227,10 +227,17 @@ class _HomePageState extends State<HomePage> {
                     return '''
                       Имя: ${contact.name}
                       Дата рождения: ${contact.birthday}
+                      Цех: ${contact.shop}
+                      Должность: ${contact.position}
+                      Адрес: ${contact.postalCode}
+                
+                      Рабочий мобильный: ${contact.phoneMobileWork}
                       Личный 1: ${contact.phoneMobilePersonal1}
                       Личный 2: ${contact.phoneMobilePersonal2}
-                      Рабочий мобильный: ${contact.phoneMobileWork}
-                        Рабочий 1: ${contact.phoneWork1}
+                      Рабочий 1: ${contact.phoneWork1}
+                      Рабочий 2: ${contact.phoneWork2}
+                      Рабочий 3: ${contact.phoneWork3}
+                      Диспетчерский: ${contact.phoneShop}
                     ''';
                   })
                   .join('\n'),

@@ -9,6 +9,9 @@ class VcfContactData {
   final String postalCode;
   final String street;
 
+  final int brigade;
+  final int grafic7;
+
   final String phoneMobileWork;
   final String phoneMobilePersonal1;
   final String phoneMobilePersonal2;
@@ -17,6 +20,8 @@ class VcfContactData {
   final String phoneWork2;
   final String phoneWork3;
 
+  final String phoneShop;
+
   const VcfContactData({
     required this.name,
     required this.birthday,
@@ -24,12 +29,15 @@ class VcfContactData {
     required this.position,
     required this.postalCode,
     required this.street,
+    required this.brigade,
+    required this.grafic7,
     required this.phoneMobileWork,
     required this.phoneMobilePersonal1,
     required this.phoneMobilePersonal2,
     required this.phoneWork1,
     required this.phoneWork2,
     required this.phoneWork3,
+    required this.phoneShop
   });
 }
 
@@ -38,6 +46,25 @@ class VcfImportService {
     final parser = VCardParser();
     return parser.parse(content);
   }
+
+  Map<String, int> readNumberBrigade(VCard card){
+    List<String> structuredName = card.name.suffixes;
+    
+    if (structuredName == null) {
+      return {
+        'numberBrigade': 0,
+        'numberGrafic7':0 ,
+      };
+    }
+
+
+    
+    return {
+      'numberBrigade': 0,
+      'numberGrafic7':0 ,
+    };
+  }
+  
 
   String readName(VCard card) {
     final formattedName = card.formattedName.trim();
@@ -57,6 +84,8 @@ class VcfImportService {
     if (structuredName == null) {
       return formattedName;
     }
+
+  
 
     // final nameFromN =
     //     [structuredName.family, structuredName.given, structuredName.additional]
@@ -121,65 +150,167 @@ class VcfImportService {
     return card.addresses.first.street.trim();
   }
 
+  Map<String, String> readPhonesFromLabels(String originalVcf){
+    final phones = <String, String>{};
+    final lines = originalVcf
+      .replaceAll('\r\n ', '')
+      .replaceAll('\n ', '')
+      .split(RegExp(r'\r?\n'));
+    
+    final numbers = <String,String>{};
+    final labels = <String,String>{};
+
+    for (final line in lines) {
+      final separator = line.indexOf(':');
+      
+      if(separator<0) continue;
+
+      final key = line.substring(0, separator).toUpperCase();
+      final value = line.substring(separator+1).trim();
+
+      final phoneMatch = RegExp(
+        r'^(ITEM\d+)\.TEL(?:;[^:]*)?$',
+        caseSensitive: false,
+      ).firstMatch(key);
+
+      if(phoneMatch != null){
+        numbers[phoneMatch.group(1)!]=value;
+      }
+
+      final labelMatch = RegExp(
+        r'^(ITEM\d+)\.X-ABLABEL$',
+        caseSensitive: false,
+      ).firstMatch(key);
+
+      if(labelMatch!=null){
+        labels[labelMatch.group(1)!] = value;
+      }
+    }
+
+    for (final entry in  numbers.entries) {
+      final label = labels[entry.key]?.toLowerCase();
+
+      switch(label){
+        case 'мобильный':
+          phones.putIfAbsent('phoneMobilePersonal2', ()=> entry.value);
+          break;
+        case 'рабочий':
+          phones.putIfAbsent('phoneMobileWork', () => entry.value);
+          break;
+        
+      }
+    }
+
+    return phones;
+  } 
+
   Map<String, String> readPhones(VCard card) {
+    //final String phoneMobileWork;
+    //final String phoneMobilePersonal1;
+    //final String phoneMobilePersonal2;
+    //final String phoneWork1;
+    //final String phoneWork2;
+    //final String phoneWork3;
+    //final String phoneShop;
+
     String mobileWork = '';
     String mobilePersonal1 = '';
     String mobilePersonal2 = '';
-
+    String shopPhone = '';
     final workPhones = <String>[];
 
-    for (final phone in card.telephones) {
+    for (final phone in card.telephones){
       final number = phone.number.trim();
       final types = phone.types.map((type) => type.toLowerCase()).toList();
 
       if (number.isEmpty) continue;
 
-      if (types.contains('cell') && types.contains('work')) {
-        if (mobileWork.isEmpty) {
-          mobileWork = number;
-        }
-      } else if (types.contains('cell') && types.contains('home')) {
-        if (mobilePersonal1.isEmpty) {
-          mobilePersonal1 = number;
-        }
-      } else if (types.contains('work') && types.contains('voice')) {
-        if (workPhones.length < 3) {
-          workPhones.add(number);
-        }
-      } else if (types.contains('cell')) {
-        if (mobilePersonal2.isEmpty) {
-          mobilePersonal2 = number;
-        }
+      // if (types.contains('cell') && types.contains('work')) {
+      //   if (mobileWork.isEmpty) {mobileWork = number;}
+      // } else if (types.contains('cell') && types.contains('home')) {
+      //   if (mobilePersonal1.isEmpty) {mobilePersonal1 = number;}
+      // } else if (types.contains('work') && types.contains('voice')) {
+      //   if (workPhones.length < 3) {workPhones.add(number);}
+      // } else if (types.contains('cell')) {
+      //   if (mobilePersonal2.isEmpty) {mobilePersonal2 = number;}
+      // }
+
+      if (number.length<=3) {
+        shopPhone = number;
+      } else if ((number.length>3) && (number.length<9)){
+        workPhones.add(number);
+      } else {
+        if (types.contains('work')) { if (mobileWork.isEmpty) {mobileWork = number;}} 
+        else if (types.contains('home')) {if (mobilePersonal2.isEmpty) {mobilePersonal2 = number;}} 
+        else if (types.contains('cell')) {if (mobilePersonal1.isEmpty) {mobilePersonal1 = number;}}
+        else if (types.contains('voice')) { workPhones.add(number);} 
       }
+
+      // if (types.contains('work')) {
+      //   if (mobileWork.isEmpty) {mobileWork = number;}
+      // } else if (types.contains('home')) {
+      //   if (mobilePersonal2.isEmpty) {mobilePersonal2 = number;}
+      // } else if (types.contains('voice')) {
+      //   if (workPhones.length > 3) {workPhones.add(number);}
+         
+      // } else if (types.contains('cell')) {
+      //   if (mobilePersonal1.isEmpty) {mobilePersonal1 = number;}
+      // }
+
+      // for(final phone in card.telephones){
+      //   debugPrint('NUMBER: ${phone.number}');
+      //   debugPrint('TYPES: ${phone.types}');
+      //   debugPrint('PARAMETERS: ${phone.extension}');
+      // }
+     
+
+
+
+
     }
     return {
       'phoneMobileWork': mobileWork,
       'phoneMobilePersonal1': mobilePersonal1,
       'phoneMobilePersonal2': mobilePersonal2,
-      'phoneWork1': workPhones.isNotEmpty ? workPhones.first : '',
-      'phoneWork2': workPhones.length >= 2 ? workPhones[1] : '',
-      'phoneWork3': workPhones.length >= 3 ? workPhones[2] : '',
+      // 'phoneWork1': workPhones.isNotEmpty ? workPhones.first : '',
+      // 'phoneWork2': workPhones.length >= 2 ? workPhones[1] : '',
+      // 'phoneWork3': workPhones.length >= 3 ? workPhones[2] : '',
+      'phoneWork1':workPhones.elementAtOrNull(0)?? '',
+      'phoneWork2':workPhones.elementAtOrNull(1)?? '',
+      'phoneWork3':workPhones.elementAtOrNull(2)?? '',
+      'phoneShop':shopPhone,
+
     };
+
   }
 
+  String readBrigade(VCard card) {
+    return card.organization?.name.trim() ?? '';
+  }
+
+  
   VcfContactData readContact(VCard card) {
     final phones = readPhones(card);
+    final numberBr = readNumberBrigade(card);
 
     return VcfContactData(
       name: readName(card),
       birthday: readBirthday(card),
       shop: readShop(card),
       position: readPosition(card),
-
       postalCode: readPostalCode(card),
-      
       street: readStreet(card),
+
+      brigade: numberBr['numberBrigade']!,
+      grafic7: numberBr['numberGrafic7']!,
+
       phoneMobileWork: phones['phoneMobileWork']!,
       phoneMobilePersonal1: phones['phoneMobilePersonal1']!,
       phoneMobilePersonal2: phones['phoneMobilePersonal2']!,
       phoneWork1: phones['phoneWork1']!,
       phoneWork2: phones['phoneWork2']!,
       phoneWork3: phones['phoneWork3']!,
+      phoneShop: phones['phoneShop']!,
     );
   }
 
