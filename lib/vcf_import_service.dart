@@ -67,10 +67,10 @@ class VcfImportService {
       ).firstMatch(item);
 
       if (brigadeMatch != null) {
-        brigade = int.parse(brigadeMatch!.group(1)!);
+        brigade = int.parse(brigadeMatch.group(1)!);
       }
       if (grafic7Match != null) {
-        grafic7 = int.parse(grafic7Match!.group(1)!);
+        grafic7 = int.parse(grafic7Match.group(1)!);
       }
     }
 
@@ -248,7 +248,7 @@ class VcfImportService {
 
       if (number.length <= 3) {
         shopPhone = number;
-      } else if ((number.length > 3) && (number.length < 9)) {
+      } else if ((number.length > 3) && (number.length < 7)) {
         workPhones.add(number);
       } else {
         if (types.contains('work')) {

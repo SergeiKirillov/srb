@@ -60,3 +60,25 @@ rus - Сменный справочник
 
 Код  города поместим в отдельный справочник, который можно будет дополнять и редактировать.
 в карточку  работника добавим адрес который будет состоять из списка города(справочник), улицы,  дома и квартиры. При этом эти поля могут быть пустые за исключением города. Город по умолчанию Темиртау и код города +77213. При наборе будет соединяться код города и рабочий номер номер. 
+
+
+## прием данных из телефонной книги (vcf_import_service.dart)(24.11.2026)
+реализован прием данных из телефонной книги 
+class поле 
+  name < -                  card.formattedName - FN
+  birthday < -              card.birthday - Если поле пустое, то текущея дата. Если только день и месяц, то вставляется текущий год
+  shop < -                  card.organization?.name  
+  position < -              card.title?
+  postalCode < -            если card.addresses путое то вставляется индекс 101400
+  street < -                card.addresses ,
+  brigade < -               card.name?.suffixes - следующее за словом `бригада` число
+  grafic7 < -               card.name?.suffixes - следующее за словом `график` число
+  phoneMobileWork < -       MobileWork - types.contains('work') - С поле рабочий
+  phoneMobilePersonal1 < -  MobilePersonal1 - types.contains('cell') - С поле мобильный
+  phoneMobilePersonal2 < -  MobilePersonal2 - types.contains('home') - C поле домашний
+  phoneWork1 < -            phoneWork1 - любой телефон состоящий из 3-знаков до 9Х 
+  phoneWork2 < -            phoneWork2 - любой телефон состоящий из 3-знаков до 9Х 
+  phoneWork3 < -            phoneWork3 - любой телефон состоящий из 3-знаков до 9Х 
+  phoneShop < -             phoneShop - любой телефон состоящий из 3-знаков
+
+
