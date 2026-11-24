@@ -37,7 +37,7 @@ class VcfContactData {
     required this.phoneWork1,
     required this.phoneWork2,
     required this.phoneWork3,
-    required this.phoneShop
+    required this.phoneShop,
   });
 }
 
@@ -47,24 +47,40 @@ class VcfImportService {
     return parser.parse(content);
   }
 
-  Map<String, int> readNumberBrigade(VCard card){
-    List<String> structuredName = card.name.suffixes;
-    
-    if (structuredName == null) {
-      return {
-        'numberBrigade': 0,
-        'numberGrafic7':0 ,
-      };
+  Map<String, int> readNumberBrigade(VCard card) {
+    List<String> structuredName = [];
+
+    structuredName = card.name?.suffixes ?? [];
+
+    int brigade = 0;
+    int grafic7 = 0;
+
+    for (final item in structuredName) {
+      //debugPrint(item);
+      final brigadeMatch = RegExp(
+        r'бригада\s+(\d+)',
+        caseSensitive: false,
+      ).firstMatch(item);
+      final grafic7Match = RegExp(
+        r'график\s(\d+)',
+        caseSensitive: false,
+      ).firstMatch(item);
+
+      if (brigadeMatch != null) {
+        brigade = int.parse(brigadeMatch!.group(1)!);
+      }
+      if (grafic7Match != null) {
+        grafic7 = int.parse(grafic7Match!.group(1)!);
+      }
     }
 
+    debugPrint(brigade.toString());
+    debugPrint(grafic7.toString());
 
-    
-    return {
-      'numberBrigade': 0,
-      'numberGrafic7':0 ,
-    };
+    //if (structuredName == null) {return {'numberBrigade': 0, 'numberGrafic7': 0};}
+
+    return {'numberBrigade': brigade, 'numberGrafic7': grafic7};
   }
-  
 
   String readName(VCard card) {
     final formattedName = card.formattedName.trim();
@@ -85,8 +101,6 @@ class VcfImportService {
       return formattedName;
     }
 
-  
-
     // final nameFromN =
     //     [structuredName.family, structuredName.given, structuredName.additional]
     //         .where((part) => part is String && part.trim().isNotEmpty)
@@ -104,9 +118,7 @@ class VcfImportService {
     final birthday = card.birthday;
     final DateTime now = DateTime.now();
 
-    if (birthday == null ||
-        birthday.day == null ||
-        birthday.month == null) {
+    if (birthday == null || birthday.day == null || birthday.month == null) {
       return DateTime(now.year, now.month, now.day);
     } else if (birthday.year == null) {
       return DateTime(now.year, birthday.month!, birthday.day!);
@@ -150,31 +162,31 @@ class VcfImportService {
     return card.addresses.first.street.trim();
   }
 
-  Map<String, String> readPhonesFromLabels(String originalVcf){
+  Map<String, String> readPhonesFromLabels(String originalVcf) {
     final phones = <String, String>{};
     final lines = originalVcf
-      .replaceAll('\r\n ', '')
-      .replaceAll('\n ', '')
-      .split(RegExp(r'\r?\n'));
-    
-    final numbers = <String,String>{};
-    final labels = <String,String>{};
+        .replaceAll('\r\n ', '')
+        .replaceAll('\n ', '')
+        .split(RegExp(r'\r?\n'));
+
+    final numbers = <String, String>{};
+    final labels = <String, String>{};
 
     for (final line in lines) {
       final separator = line.indexOf(':');
-      
-      if(separator<0) continue;
+
+      if (separator < 0) continue;
 
       final key = line.substring(0, separator).toUpperCase();
-      final value = line.substring(separator+1).trim();
+      final value = line.substring(separator + 1).trim();
 
       final phoneMatch = RegExp(
         r'^(ITEM\d+)\.TEL(?:;[^:]*)?$',
         caseSensitive: false,
       ).firstMatch(key);
 
-      if(phoneMatch != null){
-        numbers[phoneMatch.group(1)!]=value;
+      if (phoneMatch != null) {
+        numbers[phoneMatch.group(1)!] = value;
       }
 
       final labelMatch = RegExp(
@@ -182,27 +194,26 @@ class VcfImportService {
         caseSensitive: false,
       ).firstMatch(key);
 
-      if(labelMatch!=null){
+      if (labelMatch != null) {
         labels[labelMatch.group(1)!] = value;
       }
     }
 
-    for (final entry in  numbers.entries) {
+    for (final entry in numbers.entries) {
       final label = labels[entry.key]?.toLowerCase();
 
-      switch(label){
+      switch (label) {
         case 'мобильный':
-          phones.putIfAbsent('phoneMobilePersonal2', ()=> entry.value);
+          phones.putIfAbsent('phoneMobilePersonal2', () => entry.value);
           break;
         case 'рабочий':
           phones.putIfAbsent('phoneMobileWork', () => entry.value);
           break;
-        
       }
     }
 
     return phones;
-  } 
+  }
 
   Map<String, String> readPhones(VCard card) {
     //final String phoneMobileWork;
@@ -219,7 +230,7 @@ class VcfImportService {
     String shopPhone = '';
     final workPhones = <String>[];
 
-    for (final phone in card.telephones){
+    for (final phone in card.telephones) {
       final number = phone.number.trim();
       final types = phone.types.map((type) => type.toLowerCase()).toList();
 
@@ -235,15 +246,26 @@ class VcfImportService {
       //   if (mobilePersonal2.isEmpty) {mobilePersonal2 = number;}
       // }
 
-      if (number.length<=3) {
+      if (number.length <= 3) {
         shopPhone = number;
-      } else if ((number.length>3) && (number.length<9)){
+      } else if ((number.length > 3) && (number.length < 9)) {
         workPhones.add(number);
       } else {
-        if (types.contains('work')) { if (mobileWork.isEmpty) {mobileWork = number;}} 
-        else if (types.contains('home')) {if (mobilePersonal2.isEmpty) {mobilePersonal2 = number;}} 
-        else if (types.contains('cell')) {if (mobilePersonal1.isEmpty) {mobilePersonal1 = number;}}
-        else if (types.contains('voice')) { workPhones.add(number);} 
+        if (types.contains('work')) {
+          if (mobileWork.isEmpty) {
+            mobileWork = number;
+          }
+        } else if (types.contains('home')) {
+          if (mobilePersonal2.isEmpty) {
+            mobilePersonal2 = number;
+          }
+        } else if (types.contains('cell')) {
+          if (mobilePersonal1.isEmpty) {
+            mobilePersonal1 = number;
+          }
+        } else if (types.contains('voice')) {
+          workPhones.add(number);
+        }
       }
 
       // if (types.contains('work')) {
@@ -252,7 +274,7 @@ class VcfImportService {
       //   if (mobilePersonal2.isEmpty) {mobilePersonal2 = number;}
       // } else if (types.contains('voice')) {
       //   if (workPhones.length > 3) {workPhones.add(number);}
-         
+
       // } else if (types.contains('cell')) {
       //   if (mobilePersonal1.isEmpty) {mobilePersonal1 = number;}
       // }
@@ -262,11 +284,6 @@ class VcfImportService {
       //   debugPrint('TYPES: ${phone.types}');
       //   debugPrint('PARAMETERS: ${phone.extension}');
       // }
-     
-
-
-
-
     }
     return {
       'phoneMobileWork': mobileWork,
@@ -275,20 +292,17 @@ class VcfImportService {
       // 'phoneWork1': workPhones.isNotEmpty ? workPhones.first : '',
       // 'phoneWork2': workPhones.length >= 2 ? workPhones[1] : '',
       // 'phoneWork3': workPhones.length >= 3 ? workPhones[2] : '',
-      'phoneWork1':workPhones.elementAtOrNull(0)?? '',
-      'phoneWork2':workPhones.elementAtOrNull(1)?? '',
-      'phoneWork3':workPhones.elementAtOrNull(2)?? '',
-      'phoneShop':shopPhone,
-
+      'phoneWork1': workPhones.elementAtOrNull(0) ?? '',
+      'phoneWork2': workPhones.elementAtOrNull(1) ?? '',
+      'phoneWork3': workPhones.elementAtOrNull(2) ?? '',
+      'phoneShop': shopPhone,
     };
-
   }
 
   String readBrigade(VCard card) {
     return card.organization?.name.trim() ?? '';
   }
 
-  
   VcfContactData readContact(VCard card) {
     final phones = readPhones(card);
     final numberBr = readNumberBrigade(card);

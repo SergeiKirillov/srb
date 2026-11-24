@@ -121,8 +121,6 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  
-
   Future<void> importVcf() async {
     try {
       final selectedFile = await FilePicker.pickFile(
@@ -230,7 +228,8 @@ class _HomePageState extends State<HomePage> {
                       Цех: ${contact.shop}
                       Должность: ${contact.position}
                       Адрес: ${contact.postalCode}
-                
+                      Бригада: ${contact.brigade}
+                      График: ${contact.grafic7}
                       Рабочий мобильный: ${contact.phoneMobileWork}
                       Личный 1: ${contact.phoneMobilePersonal1}
                       Личный 2: ${contact.phoneMobilePersonal2}
