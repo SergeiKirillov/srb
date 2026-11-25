@@ -217,7 +217,6 @@ class _HomePageState extends State<HomePage> {
 
         if (!mounted) return;
 
-        /*
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -245,11 +244,12 @@ class _HomePageState extends State<HomePage> {
             ),
             duration: const Duration(seconds: 5),
           ),
-        ); 
-        */
-         for (final contact in contacts) {
+        );
+
+        /*  
+        for (final contact in contacts) {
           if (!mounted) return;
-          
+
           await Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => WorkerFormPage(
@@ -261,8 +261,9 @@ class _HomePageState extends State<HomePage> {
             ),
           );
         } 
+        */
 
-       /*
+        /*
           MaterialPageRoute(
               builder: (context) => WorkerFormPage(
                 onSave: (newWorker) async {
@@ -272,7 +273,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
        */
-
       } catch (e) {
         if (!mounted) return;
 
