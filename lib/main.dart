@@ -247,7 +247,8 @@ class _HomePageState extends State<HomePage> {
           ),
         ); 
         */
-         for (final contact in contacts) {
+        
+        for (final contact in contacts) {
           if (!mounted) return;
 
           await Navigator.of(context).push(
@@ -261,7 +262,7 @@ class _HomePageState extends State<HomePage> {
             ),
           );
         } 
-        */
+        
 
         /*
           MaterialPageRoute(

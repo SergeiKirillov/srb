@@ -277,6 +277,9 @@ class _WorkerFormPageState extends State<WorkerFormPage> {
       _positionController.text = initialData.position;
       _streetController.text = initialData.street;
 
+      _brigade = initialData.brigade;
+      _grafic7 = initialData.grafic7;
+
       _birthday = initialData.birthday;
 
       _phoneMobileWorkController.text = initialData.phoneMobileWork;
@@ -286,6 +289,8 @@ class _WorkerFormPageState extends State<WorkerFormPage> {
       _phoneWork1Controller.text = initialData.phoneWork1;
       _phoneWork2Controller.text = initialData.phoneWork2;
       _phoneWork3Controller.text = initialData.phoneWork3;
+
+      _phoneShopController.text = initialData.phoneShop;
     }
   }
 
@@ -542,7 +547,7 @@ class _WorkerFormPageState extends State<WorkerFormPage> {
                     ),
                     DropdownMenuItem(
                       value: 1,
-                      child: Text('7-й график -- понедельник-суббота'),
+                      child: Text('7-й график -- вторник-суббота'),
                     ),
                     DropdownMenuItem(
                       value: 2,

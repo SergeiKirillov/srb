@@ -133,7 +133,7 @@ class VcfImportService {
 
   //Обработка имени организации
   String readShop(VCard card) {
-    return card.organization?.name.trim() ?? '';
+    return card.organization?.rawValue?.trim() ?? '';
   }
 
   //Должность или функциональная обязанность
@@ -248,7 +248,7 @@ class VcfImportService {
 
       if (number.length <= 3) {
         shopPhone = number;
-      } else if ((number.length > 3) && (number.length < 7)) {
+      } else if ((number.length > 3) && (number.length < 9)) {
         workPhones.add(number);
       } else {
         if (types.contains('work')) {
