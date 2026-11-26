@@ -257,6 +257,30 @@ class _HomePageState extends State<HomePage> {
                 initialData: contact,
                 onSave: (worker) async {
                   //await WorkerStorage.saveWorker(worker);
+
+                  final updatedWorkers = [...workers];
+
+                  final index = updatedWorkers.indexWhere(
+                    (item) => item.id == worker.id,
+                  );
+
+                  if(index == -1){
+                    updatedWorkers.add(worker);
+                  } else {
+                    updatedWorkers[index] = worker;      
+                  }
+
+                  await saveWorkers(updatedWorkers);
+
+                  if(!mounted) return;
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Работник <<${worker.name}>> успешно сохранен'),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                  
                 },
               ),
             ),
