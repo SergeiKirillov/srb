@@ -54,11 +54,30 @@ class LogStorage {
   }
 
   //Загружает все события из базы данных.
-  Future<List<LogEntry>> getLogs() async {
+  Future<List<LogEntry>> getLogs({
+      String? level,
+      String? category,
+  }) async {
+    
     final db = await database;
+
+    final conditions = <String>[];
+    final arguments = <Object?>[];
+
+    if(level != null) {
+      conditions.add('level=?');
+      arguments.add(level);
+    }
+
+    if(category != null) {
+      conditions.add('categoty=?');
+      arguments.add(category);
+    }
 
     final result = await db.query(
       'log_entries',
+      where: conditions.isEmpty ? null : conditions.join(' AND '),
+      whereArgs: arguments.isEmpty ? null : arguments,
       orderBy: 'date DESC',
     );
 

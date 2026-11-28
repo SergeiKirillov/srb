@@ -18,7 +18,16 @@ class LogService {
       message: message, 
       details: details,
     );
-
     return await _storage.insertLog(entry);
+  }
+
+  Future<List<LogEntry>> getLogs({
+    String? level,
+    String? category,
+  }) async {
+    return await _storage.getLogs(
+      level: level,
+      category: category,
+    );
   }
 }

@@ -8,6 +8,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:srb/services/log_service.dart';
+import 'package:flutter/foundation.dart';
+import 'package:sqflite_common_ffi/sqflite_common_ffi.dart';
+
 
 // Файлы проекта
 import 'all_workers_page.dart';
@@ -17,11 +21,20 @@ import 'workers_page.dart';
 import 'worker_storage.dart';
 import 'worker_form_page.dart';
 
-import 'package:flutter/foundation.dart';
+
+
+
 
 const widgetChannel = MethodChannel('com.example.srb/widget');
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  if (Platform.isLinux){
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
+
   runApp(const SRBApp());
 }
 
@@ -493,6 +506,33 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+
+    /*  
+    LogService().log(
+      level: 'INFO',
+      category: 'SYSTEM',
+      message: 'Тестовая запись журнала',
+    ).then((_) async {
+      final logs = await LogService().getLogs();
+
+      debugPrint('Количество записей в журнале: ${logs.length}');
+    });
+    */
+
+    Future<void> testLogFilter() async {
+      final service = LogService();
+
+      final allLogs = await service.getLogs();
+      final infoLogs = await service.getLogs(level: 'INFO');
+      final systemLogs = await service.getLogs(category: 'SYSTEM');
+
+      debugPrint('Все записи: ${allLogs.length}');
+      debugPrint('INFO: ${infoLogs.length}');
+      debugPrint('SYSTEM: ${systemLogs.length}');
+    }
+
+
+
 
     widgetChannel.setMethodCallHandler((call) async {
       if (call.method == 'openBrigade') {
