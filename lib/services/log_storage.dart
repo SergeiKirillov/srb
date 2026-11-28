@@ -70,7 +70,7 @@ class LogStorage {
     }
 
     if(category != null) {
-      conditions.add('categoty=?');
+      conditions.add('category=?');
       arguments.add(category);
     }
 

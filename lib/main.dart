@@ -8,7 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
-import 'package:srb/services/log_service.dart';
+//import 'package:srb/services/log_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite_common_ffi/sqflite_common_ffi.dart';
 
@@ -20,7 +20,7 @@ import 'cl_worker.dart';
 import 'workers_page.dart';
 import 'worker_storage.dart';
 import 'worker_form_page.dart';
-
+import 'log_page.dart';
 
 
 
@@ -503,34 +503,37 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // Future<void> testLogFilter() async {
+  //   final service = LogService();
+
+  //   final allLogs = await service.getLogs();
+  //   final infoLogs = await service.getLogs(level: 'INFO');
+  //   final systemLogs = await service.getLogs(category: 'SYSTEM');
+
+  //   debugPrint('Все записи: ${allLogs.length}');
+  //   debugPrint('INFO: ${infoLogs.length}');
+  //   debugPrint('SYSTEM: ${systemLogs.length}');
+  // }
+
+
   @override
   void initState() {
     super.initState();
 
-    /*  
-    LogService().log(
+      
+    /* LogService().log(
       level: 'INFO',
       category: 'SYSTEM',
       message: 'Тестовая запись журнала',
     ).then((_) async {
-      final logs = await LogService().getLogs();
+      //final logs = await LogService().getLogs();
+      //debugPrint('Количество записей в журнале: ${logs.length}');
+    }); */
+    
 
-      debugPrint('Количество записей в журнале: ${logs.length}');
-    });
-    */
+    //testLogFilter();
 
-    Future<void> testLogFilter() async {
-      final service = LogService();
-
-      final allLogs = await service.getLogs();
-      final infoLogs = await service.getLogs(level: 'INFO');
-      final systemLogs = await service.getLogs(category: 'SYSTEM');
-
-      debugPrint('Все записи: ${allLogs.length}');
-      debugPrint('INFO: ${infoLogs.length}');
-      debugPrint('SYSTEM: ${systemLogs.length}');
-    }
-
+    
 
 
 
@@ -637,6 +640,12 @@ class _HomePageState extends State<HomePage> {
                   //Здесь экспорт работников.
                   exportWorkers();
                   break;
+                case 'logs':
+                  Navigator.push(
+                    context, 
+                    MaterialPageRoute(builder: (context) => const LogPage(),),
+                  );
+                  break;
                 case 'about':
                   //Информация о программе
                   break;
@@ -670,6 +679,13 @@ class _HomePageState extends State<HomePage> {
                   leading: Icon(Icons.save_alt),
                   title: Text('Эксорт работников'),
                 ),
+              ),
+              const PopupMenuItem(
+                value:'logs',
+                child: ListTile(
+                  leading: Icon(Icons.history),
+                  title: Text('Журнал событий')
+                )
               ),
               const PopupMenuItem(
                 value: 'about',
